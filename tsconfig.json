@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    
+    // 关键配置
+    "allowImportingTsExtensions": true,  // 允许导入 .ts 文件
+    "rewriteRelativeImportExtensions": true,  // 编译时将 .ts 重写为 .js
+    "noEmit": false  // 需要生成文件，所以不能是 true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}
