@@ -1,9 +1,7 @@
 import express from 'express';
-
+import controller from './../../../controller/index.ts';
 const router = express.Router();
 /* GET users listing. */
-router.get('/', function (req, res, next) {
-  res.send('查询');
-});
+router.get('/query', controller.usersController.query);
 
 export default router;

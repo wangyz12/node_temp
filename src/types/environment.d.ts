@@ -1,5 +1,10 @@
 // src/types/environment.d.ts
+import { Request, Response, NextFunction } from 'express';
 declare global {
+  // 定义公共的类型
+  type ExpressRequest = Request;
+  type ExpressResponse = Response;
+  type ExpressNext = NextFunction;
   namespace NodeJS {
     interface ProcessEnv {
       // 服务器配置
