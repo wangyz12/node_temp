@@ -13,6 +13,7 @@ import logger from 'morgan';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { env } from './config/env.js';
+import cors from 'cors';
 // 导入路由模块
 import router from './routes/index.js';
 /**
@@ -90,6 +91,8 @@ app.use(
     skip: (req) => req.url.includes('/.well-known/'),
   })
 );
+// 👇 关键：启用 CORS（放在路由之前）
+app.use(cors());
 /**
  * 根路由
  * 处理所有对 '/' 的请求
