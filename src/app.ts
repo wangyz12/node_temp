@@ -64,7 +64,7 @@ app.use(express.json());
  * 用于解析传统的表单提交请求
  * extended: false 表示使用 querystring 库解析（简单键值对）
  */
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 
 /**
  * Cookie 解析中间件

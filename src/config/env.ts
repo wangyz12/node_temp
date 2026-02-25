@@ -1,15 +1,10 @@
 // src/config/env.ts
-// import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// // 加载环境变量
-// dotenv.config({
-//   path: path.resolve(__dirname, '../../.env'),
-// });
 // 环境变量工具对象
 export const env = {
   // 服务器
@@ -18,7 +13,7 @@ export const env = {
   IS_DEV: process.env.NODE_ENV === 'development',
   IS_PROD: process.env.NODE_ENV === 'production',
 
-  // 数据库
+  // PostgreSQL 配置（保留原有）
   DB: {
     HOST: process.env.DB_HOST || 'localhost',
     PORT: parseInt(process.env.DB_PORT || '5432', 10),
@@ -27,6 +22,22 @@ export const env = {
     PASSWORD: process.env.DB_PASSWORD || '',
     get URL(): string {
       return `postgresql://${this.USER}:${this.PASSWORD}@${this.HOST}:${this.PORT}/${this.NAME}`;
+    },
+  },
+
+  // MongoDB 配置（新增）
+  MONGODB: {
+    URI: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/my_admin',
+    DB_NAME: process.env.MONGODB_DB_NAME || 'my_admin',
+    // 连接选项
+    OPTIONS: {
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    },
+    // 获取完整的连接字符串（如果需要）
+    get URL(): string {
+      return this.URI;
     },
   },
 
@@ -48,6 +59,11 @@ for (const varName of requiredEnvVars) {
     console.error(`❌ 缺少必要的环境变量: ${varName}`);
     process.exit(1);
   }
+}
+
+// MongoDB 连接警告（非必需，但建议配置）
+if (!process.env.MONGODB_URI) {
+  console.warn('⚠️ 未设置 MONGODB_URI，将使用默认值: mongodb://127.0.0.1:27017/my_admin');
 }
 
 // 生产环境警告

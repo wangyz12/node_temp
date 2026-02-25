@@ -14,15 +14,25 @@ declare global {
   // 环境变量配置
   namespace NodeJS {
     interface ProcessEnv {
+      NODE_ENV: 'development' | 'production' | 'test';
       PORT?: string;
-      NODE_ENV?: 'development' | 'production' | 'test';
-      DB_HOST?: string;
-      DB_PORT?: string;
-      DB_NAME?: string;
-      DB_USER?: string;
-      DB_PASSWORD?: string;
+
+      // MongoDB 配置
+      MONGODB_URI?: string;
+      MONGODB_DB_NAME?: string;
+
+      // PostgreSQL 配置（可选）
+      PG_HOST?: string;
+      PG_PORT?: string;
+      PG_DB_NAME?: string;
+      PG_USER?: string;
+      PG_PASSWORD?: string;
+
+      // JWT配置
       JWT_SECRET?: string;
       JWT_EXPIRES_IN?: string;
+
+      // API配置
       API_PREFIX?: string;
       CORS_ORIGIN?: string;
     }
