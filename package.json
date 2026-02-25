@@ -19,6 +19,7 @@
     "dotenv": "^17.3.1",
     "express": "~4.16.1",
     "express-validator": "^7.3.1",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.2.2",
     "morgan": "~1.9.1"
   },
@@ -29,6 +30,7 @@
     "@types/debug": "^4.1.12",
     "@types/eslint__js": "^8.42.3",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/mongoose": "^5.11.96",
     "@types/morgan": "^1.9.10",
     "@types/node": "^25.3.0",
