@@ -13,6 +13,7 @@ import chalk from 'chalk';
 import { env } from './config/env.js';
 import { connectMongoDB } from './config/mongodb.js';
 import app from './app.ts';
+import { logger } from './utils/logger.ts';
 
 // 初始化调试模块，命名空间为 'my-backend-admin:server'
 const debug = debugLib('my-backend-admin:server');
@@ -39,8 +40,10 @@ async function bootstrap() {
   try {
     // 1. 先连接 MongoDB
     console.log(chalk.blue('🔄 正在连接 MongoDB...'));
+    logger.info('正在连接数据库...');
     await connectMongoDB();
     console.log(chalk.green('✅ MongoDB 连接成功'));
+    logger.success('数据库连接成功');
 
     // 2. 启动服务器
     server.listen(port);
@@ -51,6 +54,7 @@ async function bootstrap() {
     setupGracefulShutdown();
   } catch (error) {
     console.error(chalk.red('❌ 服务器启动失败:'), error);
+    logger.error('启动失败', error);
     process.exit(1);
   }
 }

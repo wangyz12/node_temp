@@ -9,9 +9,10 @@
 // import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import express, { Express, NextFunction, Request, Response } from 'express';
-import logger from 'morgan';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { requestLogger } from './middlewares/logger.middleware.js';
+import { logger } from './utils/logger.js';
 import { env } from './config/env.js';
 import cors from 'cors';
 // 导入路由模块
@@ -42,16 +43,6 @@ const app: Express = express();
  * 全局中间件配置
  * ============================================
  */
-
-/**
- * HTTP 请求日志中间件
- * 'dev' 格式：简洁的输出，包含 :method :url :status :response-time ms
- */
-app.use(
-  logger('dev', {
-    skip: (req) => req.url.includes('/.well-known/'),
-  })
-);
 
 /**
  * JSON 请求体解析中间件
@@ -85,19 +76,25 @@ app.use(express.static(path.join(__dirname, 'public')));
  * 路由注册
  * ============================================
  */
-// 自定义日志跳过规则
-app.use(
-  logger('dev', {
-    skip: (req) => req.url.includes('/.well-known/'),
-  })
-);
+
 // 👇 关键：启用 CORS（放在路由之前）
-app.use(cors());
+app.use(cors({ origin: env.CORS_ORIGIN }));
 /**
  * 根路由
  * 处理所有对 '/' 的请求
  */
 app.use(`/api`, router);
+// ========== 404 ==========
+app.use('*', (req, res) => {
+  logger.warn(`404 ${req.method} ${req.originalUrl}`);
+  res.status(404).json({ success: false, message: '接口不存在' });
+});
+
+// ========== 错误处理 ==========
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  logger.error('服务器错误', err);
+  res.status(500).json({ success: false, message: '服务器内部错误' });
+});
 /**
  * ============================================
  * 全局错误处理中间件
