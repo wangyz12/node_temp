@@ -1,6 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '@/utils/logger.js';
-
 /**
  * 请求日志中间件
  * 记录所有 HTTP 请求

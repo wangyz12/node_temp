@@ -1,5 +1,4 @@
 import { body, validationResult } from 'express-validator';
-
 // 创建用户时的验证规则
 const validateCreateTest = [
   // 验证 name
@@ -25,6 +24,7 @@ const validateCreateTest = [
   (req: ExpressRequest, res: ExpressResponse, next: ExpressNext) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      logger.error('创建用户失败', JSON.stringify(errors.array()));
       return res.status(400).json({
         success: false,
         errors: errors.array(),

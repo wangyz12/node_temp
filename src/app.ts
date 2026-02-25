@@ -12,9 +12,9 @@ import express, { Express, NextFunction, Request, Response } from 'express';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { requestLogger } from './middlewares/logger.middleware.js';
-import { logger } from './utils/logger.js';
 import { env } from './config/env.js';
 import cors from 'cors';
+import './utils/global.ts';
 // 导入路由模块
 import router from './routes/index.js';
 /**
