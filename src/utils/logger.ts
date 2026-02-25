@@ -68,7 +68,7 @@ class SimpleLogger {
           console.log(chalk.gray(`🧹 清理过期日志: ${file}`));
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       // 清理失败不影响主程序
       console.error(chalk.yellow('⚠️ 清理旧日志失败:'), error.message);
     }
