@@ -1,7 +1,7 @@
 import { body, validationResult } from 'express-validator';
 
 // 创建用户时的验证规则
-const validateCreateUser = [
+const validateCreateTest = [
   // 验证 name
   body('name')
     .notEmpty()
@@ -35,5 +35,5 @@ const validateCreateUser = [
 ];
 
 export default {
-  validateCreateUser,
+  validateCreateTest,
 };

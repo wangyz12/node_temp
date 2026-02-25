@@ -1,7 +1,7 @@
-import usersvViedation from './models/users/users.ts';
+import testViedation from './models/test/test.ts';
 
 const vaiedation = {
-  usersvViedation,
+  testViedation,
 };
 
 export default vaiedation;

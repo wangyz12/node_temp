@@ -1,4 +1,4 @@
-import { UserModel } from './../../../models/index.ts';
+import { UserModel } from '../../../models/index.ts';
 // 第一种参数直接赋类型
 async function query(req: ExpressRequest, res: ExpressResponse, next: ExpressNext) {
   try {

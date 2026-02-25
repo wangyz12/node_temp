@@ -1,7 +1,7 @@
-import usersController from './modules/users/usersController.ts';
+import testController from './modules/test/testController.ts';
 
 const controller = {
-  usersController,
+  testController,
 };
 
 export default controller;
