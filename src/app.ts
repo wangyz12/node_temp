@@ -78,7 +78,7 @@ app.use(express.static(path.join(__dirname, 'public')));
  */
 
 // 👇 关键：启用 CORS（放在路由之前）
-app.use(cors({ origin: env.CORS_ORIGIN }));
+app.use(cors());
 /**
  * 根路由
  * 处理所有对 '/' 的请求

@@ -4,7 +4,7 @@ import mongoose, { Schema, Document } from 'mongoose';
  * 用户接口
  * 继承 mongoose 的 Document，获得 _id 等内置字段
  */
-export interface IUser extends Document {
+export interface IUsers extends Document {
   name: string; // 姓名
   email: string; // 邮箱（唯一）
   age?: number; // 年龄（可选）
@@ -16,7 +16,7 @@ export interface IUser extends Document {
  * User Schema
  * 定义 MongoDB 中文档的结构和验证规则
  */
-const userSchema = new Schema<IUser>(
+const textSchema = new Schema<IUsers>(
   {
     name: {
       type: String,
@@ -55,4 +55,4 @@ const userSchema = new Schema<IUser>(
  * 如果不指定第三个参数，MongoDB 会自动将模型名称转为复数作为集合名
  * 这里会自动使用 'users' 作为集合名
  */
-export const UserModel = mongoose.model<IUser>('User', userSchema);
+export const testModel = mongoose.model<IUsers>('Test', textSchema);

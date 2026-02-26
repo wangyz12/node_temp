@@ -3,8 +3,11 @@ import { env } from '@/config/env.js'; // 从你的 env.ts 导入
 
 export interface TokenPayload {
   userId: string;
-  email: string;
+  email?: string;
   role?: string;
+  account: string;
+  tokenVersion: number;
+  phone?: string;
 }
 
 export interface JwtTokens {
@@ -41,7 +44,7 @@ export class JwtUtil {
   /**
    * 生成 access token
    */
-  generateAccessToken(payload: TokenPayload): string {
+  getAccessToken(payload: TokenPayload): string {
     return jwt.sign(payload, this.secret, {
       expiresIn: this.expiresIn as any,
     });
@@ -50,7 +53,7 @@ export class JwtUtil {
   /**
    * 生成 refresh token
    */
-  generateRefreshToken(payload: TokenPayload): string {
+  getRefreshToken(payload: TokenPayload): string {
     return jwt.sign(payload, this.refreshSecret, {
       expiresIn: this.refreshExpiresIn as any,
     });
@@ -61,8 +64,8 @@ export class JwtUtil {
    */
   generateTokens(payload: TokenPayload): JwtTokens {
     return {
-      accessToken: this.generateAccessToken(payload),
-      refreshToken: this.generateRefreshToken(payload),
+      accessToken: this.getAccessToken(payload),
+      refreshToken: this.getRefreshToken(payload),
     };
   }
 

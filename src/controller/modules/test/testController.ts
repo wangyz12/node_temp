@@ -1,10 +1,10 @@
-import { UserModel } from '@/models/index.ts';
+import { testModel } from '@/models/index.ts';
 // 第一种参数直接赋类型
 async function query(req: ExpressRequest, res: ExpressResponse, next: ExpressNext) {
   try {
     logger.debug('创建用户请求', { body: req.body });
     // 直接从请求体创建用户
-    const user = await UserModel.create(req.body);
+    const user = await testModel.create(req.body);
     logger.success('用户创建成功', { id: user._id, email: user.email });
     res.status(201).json({
       success: true,
