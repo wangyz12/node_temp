@@ -11,7 +11,6 @@ import cookieParser from 'cookie-parser';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { requestLogger } from './middlewares/logger.middleware.js';
 import { env } from './config/env.js';
 import cors from 'cors';
 import './utils/global.ts';

@@ -1,6 +1,7 @@
 import express from 'express';
 import controller from '@/controller/index.ts';
 import vaiedation from '@/vaiedation/index.ts';
+import { authenticate } from '@/middlewares/auth.js';
 const router = express.Router();
 // 注册
 router.post(
@@ -17,11 +18,7 @@ router.post(
   controller.userController.login
 );
 // 修改密码
-router.post(
-  '/upDatePsw',
-  // vaiedation.testViedation.validateCreateTest,
-  controller.userController.upDatePsw
-);
+router.post('/upDatePsw', authenticate, controller.userController.upDatePsw);
 // 退出登录
 router.post(
   '/loginOut',
