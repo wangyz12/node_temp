@@ -20,15 +20,13 @@ router.post(
 // 修改密码
 router.post('/upDatePsw', authenticate, controller.userController.upDatePsw);
 // 退出登录
-router.post(
-  '/loginOut',
-  // vaiedation.testViedation.validateCreateTest,
-  controller.userController.loginOut
-);
+router.post('/loginOut', authenticate, controller.userController.loginOut);
 // 修改用户信息
 router.post(
   '/upDateUserInfo',
-  // vaiedation.testViedation.validateCreateTest,
+  authenticate,
+  vaiedation.userViedation.updateUserInfo.updateUserInfo,
+  vaiedation.userViedation.updateUserInfo.handleUpdateUserInfoError,
   controller.userController.upDateUserInfo
 );
 export default router;
