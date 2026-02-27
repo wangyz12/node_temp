@@ -20,22 +20,4 @@ const updateUserInfo = [
     .trim(),
 ];
 
-const handleUpdateUserInfoError = (
-  req: ExpressRequest,
-  res: ExpressResponse,
-  next: ExpressNext
-) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(200).json({
-      code: 400,
-      msg: '数据验证失败',
-      errors: errors.array().map((err: any) => ({
-        field: err.path,
-        message: err.msg,
-      })),
-    });
-  }
-  next();
-};
-export default { updateUserInfo, handleUpdateUserInfoError };
+export default { updateUserInfo };

@@ -2,19 +2,20 @@ import express from 'express';
 import controller from '@/controller/index.ts';
 import vaiedation from '@/vaiedation/index.ts';
 import { authenticate } from '@/middlewares/auth.js';
+import utils from '@/utils/utils';
 const router = express.Router();
 // 注册
 router.post(
   '/register',
   vaiedation.userViedation.registerVie.register,
-  vaiedation.userViedation.registerVie.handleValidationErrors,
+  utils.handleValidationErrors,
   controller.userController.register
 );
 // 登录
 router.post(
   '/login',
   vaiedation.userViedation.registerVie.register,
-  vaiedation.userViedation.registerVie.handleValidationErrors,
+  utils.handleValidationErrors,
   controller.userController.login
 );
 // 修改密码
@@ -26,7 +27,7 @@ router.post(
   '/upDateUserInfo',
   authenticate,
   vaiedation.userViedation.updateUserInfo.updateUserInfo,
-  vaiedation.userViedation.updateUserInfo.handleUpdateUserInfoError,
+  utils.handleValidationErrors,
   controller.userController.upDateUserInfo
 );
 export default router;

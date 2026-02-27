@@ -20,18 +20,4 @@ const register = [
     .trim(),
 ];
 
-// 验证结果处理中间件
-const handleValidationErrors = (req: ExpressRequest, res: ExpressResponse, next: ExpressNext) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      success: false,
-      errors: errors.array().map((err: any) => ({
-        field: err.path,
-        message: err.msg,
-      })),
-    });
-  }
-  next();
-};
-export default { register, handleValidationErrors };
+export default { register };
