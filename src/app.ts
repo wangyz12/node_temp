@@ -11,11 +11,11 @@ import cookieParser from 'cookie-parser';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { env } from './config/env.js';
+import { env } from './config/env.ts';
 import cors from 'cors';
 import './utils/global.ts';
 // 导入路由模块
-import router from './routes/index.js';
+import router from './routes/index.ts';
 /**
  * 兼容 ESM 环境下的 __dirname 变量
  *
@@ -86,13 +86,13 @@ app.use(`/api`, router);
 // ========== 404 ==========
 app.use('*', (req, res) => {
   logger.warn(`404 ${req.method} ${req.originalUrl}`);
-  res.status(404).json({ success: false, message: '接口不存在' });
+  res.status(404).json({ code: 1000, message: '接口不存在' });
 });
 
 // ========== 错误处理 ==========
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   logger.error('服务器错误', err);
-  res.status(500).json({ success: false, message: '服务器内部错误' });
+  res.status(500).json({ code: 1000, message: '服务器内部错误' });
 });
 /**
  * ============================================
@@ -109,7 +109,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 
   // 返回统一的错误响应格式
   res.status(500).json({
-    success: false,
+    code: 1000,
     message: '服务器内部错误',
     // 生产环境不建议返回详细错误信息
     // error: process.env.NODE_ENV === 'development' ? err.message : undefined

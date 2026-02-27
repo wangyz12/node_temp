@@ -10,8 +10,8 @@
 import debugLib from 'debug';
 import http from 'http';
 import chalk from 'chalk';
-import { env } from './config/env.js';
-import { connectMongoDB } from './config/mongodb.js';
+import { env } from './config/env.ts';
+import { connectMongoDB } from './config/mongodb.ts';
 import app from './app.ts';
 // 初始化调试模块，命名空间为 'my-backend-admin:server'
 const debug = debugLib('my-backend-admin:server');

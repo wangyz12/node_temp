@@ -1,6 +1,6 @@
 // src/models/users/users.ts
 import mongoose, { Schema, Document } from 'mongoose';
-import { MD5Util } from '@/utils/md5.js';
+import { MD5Util } from '@/utils/md5.ts';
 // 角色枚举
 export enum UserRole {
   ADMIN = 'admin', // 管理员

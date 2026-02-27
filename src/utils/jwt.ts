@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
-import { env } from '@/config/env.js'; // 从你的 env.ts 导入
+import { env } from '@/config/env.ts'; // 从你的 env.ts 导入
 
+// 配置token的对象类型，可自行添加属性
 export interface TokenPayload {
   userId: string;
   email?: string;
@@ -9,7 +10,7 @@ export interface TokenPayload {
   tokenVersion: number;
   phone?: string;
 }
-
+// 返回的token
 export interface JwtTokens {
   accessToken: string;
   refreshToken?: string;

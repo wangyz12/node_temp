@@ -1,6 +1,6 @@
-import { jwtUtil, TokenPayload } from './jwt.js';
-import { UserModel } from '@/models/index.js';
-import { IUser } from '@/models/users/users.js';
+import { jwtUtil } from './jwt.ts';
+import { UserModel } from '@/models/index.ts';
+import { IUser } from '@/models/users/users.ts';
 
 /**
  * 为用户生成 token（并返回不含密码的用户信息）

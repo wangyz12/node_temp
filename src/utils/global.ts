@@ -1,5 +1,5 @@
 // utils/global-logger.ts
-import { logger as appLogger } from './logger.js';
+import { logger as appLogger } from './logger.ts';
 
 // 声明全局类型
 declare global {

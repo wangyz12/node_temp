@@ -1,4 +1,4 @@
-import { body, validationResult } from 'express-validator';
+import { body } from 'express-validator';
 // 注册验证规则
 const register = [
   // 账号验证

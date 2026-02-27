@@ -1,7 +1,7 @@
 import express from 'express';
 import controller from '@/controller/index.ts';
 import vaiedation from '@/vaiedation/index.ts';
-import { authenticate } from '@/middlewares/auth.js';
+import { authenticate } from '@/middlewares/auth.ts';
 import utils from '@/utils/utils';
 const router = express.Router();
 // 注册
