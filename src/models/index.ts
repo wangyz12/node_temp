@@ -1,2 +1,3 @@
 export * from './test/test.model.ts';
 export * from './users/users.ts'; // user
+export * from './menu/menu.ts'; // 菜单
