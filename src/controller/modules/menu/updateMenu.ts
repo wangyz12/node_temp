@@ -1,14 +1,14 @@
 import { MenuModel } from '@/models/index.ts';
+// 修改菜单
 export const updateMenu = async (req: ExpressRequest, res: ExpressResponse) => {
   try {
     logger.debug('修改菜单请求', { body: req.body });
     const obj = req.body;
     const { name, path, component, title } = req.body;
-    // 1. 基础验证
     if (!name || !path || !component || !title) {
       return res.status(200).json({
         code: 1000,
-        msg: '缺少必填字段：name、path、component、title 不能为空',
+        msg: '缺少必填字段：name、path、component、title、 不能为空',
       });
     }
     if (!obj.id) {

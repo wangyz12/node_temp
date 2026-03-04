@@ -7,4 +7,6 @@ const router = express.Router();
 router.post('/addMenu', authenticate, vaiedation.menuViedation.addMenu, controller.menuController.addMenu);
 // 修改菜单
 router.post('/updateMenu', authenticate, vaiedation.menuViedation.addMenu, controller.menuController.updateMenu);
+// 删除菜单
+router.post('/delMenu', authenticate, controller.menuController.delMenu);
 export default router;
