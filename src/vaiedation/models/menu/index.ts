@@ -1,3 +1,2 @@
-import { addMenu } from './menu.ts';
-
+import { addMenu } from './addMenu.ts';
 export default { addMenu };
