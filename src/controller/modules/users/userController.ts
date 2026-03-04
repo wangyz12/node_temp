@@ -55,7 +55,7 @@ const login = async (req: ExpressRequest, res: ExpressResponse, next: ExpressNex
       msg: '用户创建成功',
       data: tokenData,
     });
-    logger.error(`${req.body.account}用户登录成功`, { account: req.body.account });
+    logger.success(`${req.body.account}用户登录成功`, { account: req.body.account });
   } catch (error: any) {
     logger.error(`${req.body.account}用户登录失败`, error);
     return res.status(500).json({ code: 1000, data: null, msg: error });
@@ -99,7 +99,7 @@ const upDatePsw = async (req: ExpressRequest, res: ExpressResponse, next: Expres
     await user.save();
     // 8.token版本加1
     await user.incrementTokenVersion();
-    logger.error('修改密码成功', '');
+    logger.success('修改密码成功', '');
     res.status(200).json({
       code: 200,
       data: null,
@@ -126,11 +126,7 @@ const loginOut = async (req: ExpressRequest, res: ExpressResponse, next: Express
       });
     }
     // 2.使token失效
-    const user = await UserModel.findByIdAndUpdate(
-      userId,
-      { $inc: { tokenVersion: 1 } },
-      { returnDocument: 'after' }
-    );
+    const user = await UserModel.findByIdAndUpdate(userId, { $inc: { tokenVersion: 1 } }, { returnDocument: 'after' });
     if (!user) {
       logger.error('退出登录接口用户未登录');
       return res.status(200).json({
@@ -222,7 +218,7 @@ const upDateUserInfo = async (req: ExpressRequest, res: ExpressResponse, next: E
       return res.status(200).json({ code: 1000, msg: '用户不存在' });
     }
     // 6. 记录成功日志
-    logger.info(`用户 ${updatedUser.account} 修改信息成功`, {
+    logger.success(`用户 ${updatedUser.account} 修改信息成功`, {
       userId: updatedUser._id,
       updatedFields: Object.keys(updateData),
     });

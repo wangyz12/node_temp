@@ -8,14 +8,14 @@ export const addMenu = async (req: ExpressRequest, res: ExpressResponse) => {
     if (!name || !path || !component || !title) {
       return res.status(200).json({
         code: 1000,
-        msg: '缺少必要字段：name、path、component、title 不能为空',
+        msg: '缺少必填字段：name、path、component、title 不能为空',
       });
     }
     // 2. 检查路由名称是否已存在
     const existingRoute = await MenuModel.findOne({ name });
     if (existingRoute) {
-      return res.status(409).json({
-        code: 409,
+      return res.status(200).json({
+        code: 1000,
         msg: '路由名称已存在',
       });
     }
@@ -23,8 +23,8 @@ export const addMenu = async (req: ExpressRequest, res: ExpressResponse) => {
     if (pid) {
       const parentRoute = await MenuModel.findById(pid);
       if (!parentRoute) {
-        return res.status(404).json({
-          code: 404,
+        return res.status(200).json({
+          code: 1000,
           msg: '父级路由不存在',
         });
       }
@@ -56,8 +56,8 @@ export const addMenu = async (req: ExpressRequest, res: ExpressResponse) => {
       path: menu.path,
     });
     // 6. 返回成功响应
-    res.status(201).json({
-      code: 201,
+    res.status(200).json({
+      code: 200,
       msg: '菜单添加成功',
       data: menu,
     });
