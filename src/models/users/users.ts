@@ -1,20 +1,13 @@
 // src/models/users/users.ts
 import mongoose, { Schema, Document } from 'mongoose';
 import { MD5Util } from '@/utils/md5.ts';
-// 角色枚举
-export enum UserRole {
-  ADMIN = 'admin', // 管理员
-  MANAGER = 'manager', // 部门经理
-  EMPLOYEE = 'employee', // 普通员工
-  GUEST = 'guest', // 访客
-}
 export interface IUser extends Document {
   account: string;
   password: string;
   username: string;
   employeeId?: string; // 工号
   department?: string; // 部门
-  role: UserRole; // 角色
+  roles: string[]; // 角色
   avatar?: string;
   phone?: string;
   email?: string;
@@ -63,10 +56,9 @@ const userSchema = new Schema<IUser>(
       maxlength: [50, '部门名称不能大于50'],
     },
     // 👇 新增：角色（使用枚举）
-    role: {
-      type: String,
-      enum: Object.values(UserRole),
-      default: UserRole.EMPLOYEE, // 默认为普通员工
+    roles: {
+      type: [String], // 改为数组
+      default: ['employee'], // 默认为数组包含普通员工
       required: [true, '角色不能为空'],
     },
     avatar: {
@@ -150,6 +142,4 @@ userSchema.methods.incrementTokenVersion = async function (this: IUser): Promise
 };
 
 // 导出模型
-export const UserModel = mongoose.models.User
-  ? mongoose.model<IUser>('User')
-  : mongoose.model<IUser>('User', userSchema);
+export const UserModel = mongoose.models.User ? mongoose.model<IUser>('User') : mongoose.model<IUser>('User', userSchema);

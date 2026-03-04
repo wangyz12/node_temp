@@ -12,7 +12,7 @@ export interface IRoute extends Document {
   type: 'menu' | 'button' | 'iframe'; // 类型 菜单 按钮 内嵌页面
   hidden: boolean; // 是否隐藏
   cache: boolean; // 是否缓存
-  permissions?: string[]; // 所需权限标识
+  permission?: string; // 所需权限标识
   external?: boolean; // 时候外联
   target?: '_blank' | '_self'; // 外联打开方式
   createAt: Date;
@@ -86,9 +86,11 @@ const menuSchema = new Schema<IRoute, IRouteModel>(
       type: Boolean,
       default: true,
     },
-    permissions: {
-      type: [String],
-      default: [],
+    permission: {
+      type: String,
+      trim: true,
+      // 说明：按钮类型通常需要权限，菜单根据需要设置
+      // 不设required，因为有些菜单不需要权限控制
     },
     external: {
       type: Boolean,
