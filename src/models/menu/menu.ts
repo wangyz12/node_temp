@@ -18,12 +18,15 @@ export interface IRoute extends Document {
   createAt: Date;
   updateAt: Date;
   children?: IRoute[]; // 虚拟字段 (用于树形结构)
+  id?: string; // 添加 id 字段（可选，因为 transform 后会添加）
 }
+
 // 定义静态方法的接口
 export interface IRouteModel extends Model<IRoute> {
   getTree(pid?: string | null): Promise<any[]>;
   getFullTree(): Promise<any[]>;
 }
+
 // 路由模型
 const menuSchema = new Schema<IRoute, IRouteModel>(
   {
@@ -98,9 +101,31 @@ const menuSchema = new Schema<IRoute, IRouteModel>(
     },
   },
   {
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
+    timestamps: true, // 这会自动添加 createdAt 和 updatedAt 字段
+    toJSON: {
+      virtuals: true, // 启用虚拟字段
+      transform: function (doc, ret: any) {
+        delete ret.__v; // 删除版本号
+        delete ret._id; // 删除 _id
+        // 确保 id 存在
+        if (doc._id) {
+          ret.id = doc._id.toString();
+        }
+        return ret;
+      },
+    },
+    toObject: {
+      virtuals: true, // 启用虚拟字段
+      transform: function (doc, ret: any) {
+        delete ret.__v; // 删除版本号
+        delete ret._id; // 删除 _id
+        // 确保 id 存在
+        if (doc._id) {
+          ret.id = doc._id.toString();
+        }
+        return ret;
+      },
+    },
   }
 );
 
@@ -111,8 +136,8 @@ menuSchema.virtual('children', {
   foreignField: 'pid',
 });
 
-// 符合索引：提高按pid查询的性能
-menuSchema.index({ pin: 1, sort: 1 });
+// 复合索引：提高按pid查询的性能
+menuSchema.index({ pid: 1, sort: 1 });
 
 // 确保同一父级下的路由名称不重复
 menuSchema.index({ pid: 1, name: 1 }, { unique: true });
@@ -122,6 +147,7 @@ menuSchema.statics.getTree = async function (pid: string | null = null) {
   const routes: any = await this.find({ pid }).sort('sort');
   const tree = [];
   for (const route of routes) {
+    // 使用 toObject() 时会自动应用 transform
     const item = route.toObject();
     const children = await this.getTree(route._id.toString());
     if (children.length > 0) {
@@ -142,11 +168,23 @@ menuSchema.statics.getFullTree = async function () {
   const tree: any[] = [];
 
   // 先将所有路由放入 Map
-  allRoutes.forEach((route: { _id: { toString: () => any } }) => {
-    map.set(route._id.toString(), {
+  allRoutes.forEach((route: any) => {
+    const routeId = route._id.toString();
+    const routePid = route.pid?.toString() || null;
+
+    // 创建新对象，转换 _id 为 id
+    const convertedRoute = {
       ...route,
+      id: routeId,
+      pid: routePid,
       children: [],
-    });
+    };
+
+    // 删除原始的 _id 和 __v
+    delete convertedRoute._id;
+    delete convertedRoute.__v;
+
+    map.set(routeId, convertedRoute);
   });
 
   // 构建树形结构
@@ -165,6 +203,4 @@ menuSchema.statics.getFullTree = async function () {
 };
 
 // 导出模型
-export const MenuModel = mongoose.models.menu
-  ? mongoose.model<IRoute>('Menu')
-  : mongoose.model<IRoute>('Menu', menuSchema);
+export const MenuModel = (mongoose.models.menu ? mongoose.model<IRoute>('Menu') : mongoose.model<IRoute, IRouteModel>('Menu', menuSchema)) as IRouteModel;

@@ -9,4 +9,6 @@ router.post('/addMenu', authenticate, vaiedation.menuViedation.addMenu, controll
 router.post('/updateMenu', authenticate, vaiedation.menuViedation.addMenu, controller.menuController.updateMenu);
 // 删除菜单
 router.post('/delMenu', authenticate, controller.menuController.delMenu);
+// 查询菜单
+router.get('/findMenu', authenticate, controller.menuController.findMenu);
 export default router;
