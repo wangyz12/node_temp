@@ -2,7 +2,6 @@ import { MenuModel } from '@/models/index.ts';
 // 添加菜单
 export const addMenu = async (req: ExpressRequest, res: ExpressResponse) => {
   try {
-    logger.debug('添加菜单请求', { body: req.body });
     const { name, path, component, title, icon, sort, pid, type, hidden, cache, permissions, external, target } = req.body;
     // 1. 基础验证
     if (!name || !path || !component || !title) {
@@ -50,11 +49,6 @@ export const addMenu = async (req: ExpressRequest, res: ExpressResponse) => {
     }
     // 5. 创建菜单
     const menu = await MenuModel.create(menuData);
-    logger.success('菜单添加成功', {
-      id: menu._id,
-      name: menu.name,
-      path: menu.path,
-    });
     // 6. 返回成功响应
     res.status(200).json({
       code: 200,
@@ -80,8 +74,6 @@ export const addMenu = async (req: ExpressRequest, res: ExpressResponse) => {
         errors: messages,
       });
     }
-
-    logger.error('添加菜单失败', error);
     res.status(500).json({
       code: 500,
       msg: '服务器内部错误',

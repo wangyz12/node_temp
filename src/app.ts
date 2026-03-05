@@ -11,6 +11,7 @@ import cookieParser from 'cookie-parser';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
+import loggerMiddleware from '@/middlewares/logger.ts';
 import { env } from './config/env.ts';
 import cors from 'cors';
 import './utils/global.ts';
@@ -42,7 +43,6 @@ const app: Express = express();
  * 全局中间件配置
  * ============================================
  */
-
 /**
  * JSON 请求体解析中间件
  * 用于解析 Content-Type 为 application/json 的请求
@@ -78,6 +78,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // 👇 关键：启用 CORS（放在路由之前）
 app.use(cors());
+// 全局日志中间件
+app.use(loggerMiddleware);
+
 /**
  * 根路由
  * 处理所有对 '/' 的请求

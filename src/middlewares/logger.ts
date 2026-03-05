@@ -1,32 +1,45 @@
 import { Request, Response, NextFunction } from 'express';
 /**
- * 请求日志中间件
- * 记录所有 HTTP 请求
+ * 接口请求/响应日志中间件
+ * 自动记录请求信息、响应状态、耗时等
  */
-export const requestLogger = (req: Request, res: Response, next: NextFunction) => {
-  const start = Date.now();
+const loggerMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  // 记录请求开始时间
+  const startTime = Date.now();
+  const { method, url, body, ip } = req;
 
-  // 请求进来时记录
-  logger.debug(`${req.method} ${req.url}`, {
-    ip: req.ip,
+  // 1. 记录请求进入日志
+  logger.success(`[${method}] ${url} 请求`, {
+    ip,
+    body: method === 'POST' || method === 'PUT' ? body : '无请求体',
     query: req.query,
-    body: req.method !== 'GET' ? req.body : undefined,
   });
 
-  // 响应结束时记录
+  // 监听响应完成事件，记录响应日志
   res.on('finish', () => {
-    const duration = Date.now() - start;
-    const status = res.statusCode;
+    const { statusCode } = res;
+    const duration = Date.now() - startTime; // 接口耗时
 
-    // 根据状态码选择日志级别
-    if (status >= 500) {
-      logger.error(`${req.method} ${req.url} ${status} ${duration}ms`);
-    } else if (status >= 400) {
-      logger.warn(`${req.method} ${req.url} ${status} ${duration}ms`);
+    // 根据状态码区分日志级别
+    if (statusCode >= 200 && statusCode < 400) {
+      logger.success(`[${method}] ${url} 响应成功`, {
+        statusCode,
+        duration: `${duration}ms`,
+      });
+    } else if (statusCode >= 400 && statusCode < 500) {
+      logger.warn(`[${method}] ${url} 客户端错误`, {
+        statusCode,
+        duration: `${duration}ms`,
+      });
     } else {
-      logger.success(`${req.method} ${req.url} ${status} ${duration}ms`);
+      logger.error(`[${method}] ${url} 服务器错误`, {
+        statusCode,
+        duration: `${duration}ms`,
+      });
     }
   });
 
   next();
 };
+
+export default loggerMiddleware;
