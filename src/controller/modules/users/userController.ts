@@ -37,22 +37,55 @@ const register = async (req: ExpressRequest, res: ExpressResponse) => {
   }
 };
 // 登录
-const login = async (req: ExpressRequest, res: ExpressResponse, next: ExpressNext) => {
+const login = async (req: ExpressRequest, res: ExpressResponse) => {
   try {
     const { account, password } = req.body;
-    const user: any = await UserModel.findOne({ account }).select('+password');
-    const isPasswordValid = user.comparePassword(password);
-    if (!user || !isPasswordValid) {
-      return res.status(200).json({ code: 1000, data: null, msg: '用户名密码不正确' });
+    // 1. 验证请求参数
+    if (!account || !password) {
+      return res.status(400).json({
+        code: 400,
+        msg: '账号和密码不能为空',
+      });
     }
+    // 2. 查找用户（需要密码字段用于验证）
+    const user = await UserModel.findOne({ account }).select('+password');
+    // 3. 用户不存在
+    if (!user) {
+      return res.status(401).json({
+        code: 401,
+        msg: '用户名或密码错误',
+      });
+    }
+    // 4. 验证密码（注意：需要 await）
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        code: 401,
+        msg: '用户名或密码错误',
+      });
+    }
+    // 5. 生成 token
     const tokenData = generateUserTokenFromExisting(user);
+    // 7. 返回成功响应
     res.status(200).json({
       code: 200,
-      msg: '用户创建成功',
+      msg: '登录成功',
       data: tokenData,
     });
   } catch (error: any) {
-    return res.status(500).json({ code: 1000, data: null, msg: error });
+    // 错误处理
+    // 数据库错误处理
+    if (error.name === 'MongoError' || error.name === 'MongooseError') {
+      return res.status(500).json({
+        code: 500,
+        msg: '数据库错误',
+      });
+    }
+    // 默认错误响应
+    res.status(500).json({
+      code: 500,
+      msg: '服务器内部错误',
+    });
   }
 };
 // 修改密码

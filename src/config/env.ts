@@ -50,6 +50,20 @@ export const env = {
   // API
   API_PREFIX: process.env.API_PREFIX || '/api',
   CORS_ORIGIN: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3001'],
+  RATE_LIMIT: {
+    WINDOW_MS: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),
+    MAX: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
+
+    LOGIN: {
+      WINDOW_MS: parseInt(process.env.LOGIN_LIMIT_WINDOW_MS || '900000', 10),
+      MAX: parseInt(process.env.LOGIN_LIMIT_MAX || '5', 10),
+    },
+
+    REGISTER: {
+      WINDOW_MS: parseInt(process.env.REGISTER_LIMIT_WINDOW_MS || '3600000', 10),
+      MAX: parseInt(process.env.REGISTER_LIMIT_MAX || '3', 10),
+    },
+  },
 } as const;
 
 // 验证必要的环境变量

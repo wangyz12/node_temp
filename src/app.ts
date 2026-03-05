@@ -12,6 +12,7 @@ import express, { Express, NextFunction, Request, Response } from 'express';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import loggerMiddleware from '@/middlewares/logger.ts';
+import { RateLimiterUtil } from '@/utils/rateLimiter.ts';
 import { env } from './config/env.ts';
 import cors from 'cors';
 import './utils/global.ts';
@@ -37,7 +38,8 @@ console.log(`🌍 当前环境: ${process.env.NODE_ENV || 'development'}`);
 console.log(`🚪 端口: ${process.env.PORT || 3000}`);
 // 创建 Express 应用实例
 const app: Express = express();
-
+// ✅ 1. 全局通用限流（放在最前面，所有路由都会受限制）
+app.use(RateLimiterUtil.general);
 /**
  * ============================================
  * 全局中间件配置
