@@ -70,6 +70,7 @@ const userSchema = new Schema<IUser>(
       trim: true,
       sparse: true,
       unique: true,
+      default: '',
       validate: {
         validator: function (v: string) {
           return !v || /^1[3-9]\d{9}$/.test(v);
@@ -83,6 +84,7 @@ const userSchema = new Schema<IUser>(
       lowercase: true,
       sparse: true,
       unique: true,
+      default: '',
       validate: {
         validator: function (v: string) {
           return !v || /^\S+@\S+\.\S+$/.test(v);

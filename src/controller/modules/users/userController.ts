@@ -14,6 +14,7 @@ const register = async (req: ExpressRequest, res: ExpressResponse, next: Express
       data: tokenData,
     });
   } catch (error: any) {
+    console.log(error);
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
