@@ -2,7 +2,7 @@ import { UserModel } from '@/models/index.ts';
 import { validationResult } from 'express-validator';
 import { generateUserToken, generateUserTokenFromExisting } from '@/utils/userToken.ts';
 // 注册
-const register = async (req: ExpressRequest, res: ExpressResponse, next: ExpressNext) => {
+const register = async (req: ExpressRequest, res: ExpressResponse) => {
   try {
     // 直接从请求体创建用户
     const user = await UserModel.create(req.body);
@@ -14,7 +14,6 @@ const register = async (req: ExpressRequest, res: ExpressResponse, next: Express
       data: tokenData,
     });
   } catch (error: any) {
-    console.log(error);
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,

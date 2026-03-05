@@ -1,20 +1,21 @@
 // src/models/users/users.ts
-import mongoose, { Schema, Document } from 'mongoose';
-import { MD5Util } from '@/utils/md5.ts';
+import mongoose, { Schema, Document, CallbackError } from 'mongoose';
+import { bcryptUtil } from '@/utils/bcrypt.ts'; // 改为导入 bcrypt
+
 export interface IUser extends Document {
   account: string;
   password: string;
   username: string;
-  employeeId?: string; // 工号
-  department?: string; // 部门
-  roles: string[]; // 角色
+  employeeId?: string;
+  department?: string;
+  roles: string[];
   avatar?: string;
   phone?: string;
   email?: string;
   tokenVersion: number;
   createdAt: Date;
   updatedAt: Date;
-  comparePassword(candidatePassword: string): boolean;
+  comparePassword(candidatePassword: string): Promise<boolean>; // 改为异步
   incrementTokenVersion(): Promise<void>;
 }
 
@@ -40,25 +41,23 @@ const userSchema = new Schema<IUser>(
       maxlength: [50, '姓名长度不能大于50'],
       default: '默认用户',
     },
-    // 👇 新增：工号
     employeeId: {
       type: String,
       trim: true,
       unique: true,
-      sparse: true, // 允许为空，但如果有值则必须唯一
+      sparse: true,
+      default: '',
       minlength: [2, '工号长度不能小于2'],
       maxlength: [20, '工号长度不能大于20'],
     },
-    // 👇 新增：部门
     department: {
       type: String,
       trim: true,
       maxlength: [50, '部门名称不能大于50'],
     },
-    // 👇 新增：角色（使用枚举）
     roles: {
-      type: [String], // 改为数组
-      default: ['employee'], // 默认为数组包含普通员工
+      type: [String],
+      default: ['employee'],
       required: [true, '角色不能为空'],
     },
     avatar: {
@@ -101,7 +100,21 @@ const userSchema = new Schema<IUser>(
     timestamps: true,
     toJSON: {
       transform: function (doc, ret: any) {
-        delete ret.password; // 👈 确保序列化时删除密码
+        delete ret.password;
+        delete ret.__v;
+
+        // 确保 _id 被转换为 id
+        if (ret._id) {
+          ret.id = ret._id.toString();
+          delete ret._id;
+        }
+
+        return ret;
+      },
+    },
+    toObject: {
+      transform: function (doc, ret: any) {
+        delete ret.password;
         delete ret.__v;
 
         if (ret._id) {
@@ -115,24 +128,33 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-// ✅ 修正：使用 async 函数，不调用 next
-userSchema.pre('save', async function (this: IUser) {
-  // 只有密码被修改时才重新加密
-  if (!this.isModified('password')) return;
-
-  try {
-    // 使用 MD5 加密
-    this.password = MD5Util.hash(this.password);
-  } catch (error) {
-    throw error; // 直接抛出错误
+// ✅ 修正：移除 next 参数，不调用 next()
+userSchema.pre('validate', function (this: IUser) {
+  if (this.email === '') {
+    this.email = undefined;
+  }
+  if (this.phone === '') {
+    this.phone = undefined;
+  }
+  if (this.employeeId === '') {
+    this.employeeId = undefined;
   }
 });
 
-/**
- * 实例方法：验证密码
- */
-userSchema.methods.comparePassword = function (this: IUser, candidatePassword: string): boolean {
-  return MD5Util.hash(candidatePassword) === this.password;
+// 👇 修改：使用 bcrypt 加密密码（异步）
+userSchema.pre('save', async function (this: IUser) {
+  if (!this.isModified('password')) return;
+  try {
+    // 使用 bcrypt 异步加密
+    this.password = await bcryptUtil.hash(this.password);
+  } catch (error) {
+    throw error;
+  }
+});
+
+// 👇 修改：验证密码方法改为异步
+userSchema.methods.comparePassword = async function (this: IUser, candidatePassword: string): Promise<boolean> {
+  return await bcryptUtil.verify(candidatePassword, this.password);
 };
 
 /**
