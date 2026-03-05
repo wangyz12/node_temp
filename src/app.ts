@@ -13,6 +13,7 @@ import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import loggerMiddleware from '@/middlewares/logger.ts';
 import { RateLimiterUtil } from '@/utils/rateLimiter.ts';
+import { SecurityConfig } from './config/security.ts'; // 安全相关 Xss 等
 import { env } from './config/env.ts';
 import cors from 'cors';
 import './utils/global.ts';
@@ -38,8 +39,39 @@ console.log(`🌍 当前环境: ${process.env.NODE_ENV || 'development'}`);
 console.log(`🚪 端口: ${process.env.PORT || 3000}`);
 // 创建 Express 应用实例
 const app: Express = express();
-// ✅ 1. 全局通用限流（放在最前面，所有路由都会受限制）
+// 1. 隐藏服务器信息
+app.use(SecurityConfig.hideServerInfo);
+
+// 2. CORS（必须在最前面）
+// app.use(cors(SecurityConfig.corsOptions));
+
+// 3. Helmet 安全头
+app.use(SecurityConfig.helmetConfig);
+
+// 4. 防点击劫持
+app.use(SecurityConfig.frameguard);
+
+// 5. 全局限流
+// app.use(SecurityConfig.globalLimiter);
+// ✅ 1. 全局通用限流（放在最前面，所有路由都会受限制）先用这个
 app.use(RateLimiterUtil.general);
+// 6. 解析请求体（必须在过滤之前）
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// 7. XSS过滤
+app.use(SecurityConfig.xssMiddleware);
+
+// 8. NoSQL注入过滤
+app.use(SecurityConfig.sanitizeMiddleware);
+
+// ==================== 路由 ====================
+
+// 健康检查（不经过限流）
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 /**
  * ============================================
  * 全局中间件配置
