@@ -35,7 +35,6 @@ const deptSchema = new Schema<IDept>(
       type: Schema.Types.ObjectId,
       ref: 'Dept',
       default: null,
-      index: true,
     },
     ancestors: {
       type: String,
@@ -84,11 +83,47 @@ const deptSchema = new Schema<IDept>(
   },
   {
     timestamps: true,
+    // ✅ 添加 toJSON 转换器
+    toJSON: {
+      transform: function (doc, ret: any) {
+        // 删除不需要的字段
+        delete ret.__v;
+
+        // 将 _id 转换为 id
+        if (ret._id) {
+          ret.id = ret._id.toString();
+          delete ret._id;
+        }
+
+        // 如果 parentId 存在，也转换为字符串
+        if (ret.parentId) {
+          ret.parentId = ret.parentId.toString();
+        }
+
+        return ret;
+      },
+    },
+    // ✅ 添加 toObject 转换器（可选）
+    toObject: {
+      transform: function (doc, ret: any) {
+        delete ret.__v;
+
+        if (ret._id) {
+          ret.id = ret._id.toString();
+          delete ret._id;
+        }
+
+        if (ret.parentId) {
+          ret.parentId = ret.parentId.toString();
+        }
+
+        return ret;
+      },
+    },
   }
 );
 
-// 索引
-deptSchema.index({ parentId: 1 });
-deptSchema.index({ code: 1 });
+// 统一在这里创建需要的索引
+deptSchema.index({ parentId: 1 }); // 用于查询子部门
 
 export const DeptModel = mongoose.models.Dept ? mongoose.model<IDept>('Dept') : mongoose.model<IDept>('Dept', deptSchema);
