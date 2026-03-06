@@ -39,6 +39,7 @@ console.log(`🌍 当前环境: ${process.env.NODE_ENV || 'development'}`);
 console.log(`🚪 端口: ${process.env.PORT || 3000}`);
 // 创建 Express 应用实例
 const app: Express = express();
+app.use(loggerMiddleware);
 // 1. 隐藏服务器信息
 app.use(SecurityConfig.hideServerInfo);
 
@@ -113,7 +114,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 👇 关键：启用 CORS（放在路由之前）
 app.use(cors());
 // 全局日志中间件
-app.use(loggerMiddleware);
 
 /**
  * 根路由
