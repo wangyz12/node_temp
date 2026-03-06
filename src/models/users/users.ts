@@ -1,21 +1,20 @@
 // src/models/users/users.ts
-import mongoose, { Schema, Document, CallbackError } from 'mongoose';
-import { bcryptUtil } from '@/utils/bcrypt.ts'; // 改为导入 bcrypt
+import mongoose, { Schema, Document, CallbackError, Types } from 'mongoose';
+import { bcryptUtil } from '@/utils/bcrypt.ts';
 
 export interface IUser extends Document {
   account: string;
   password: string;
   username: string;
-  employeeId?: string;
-  department?: string;
-  roles: string[];
+  deptId: Types.ObjectId; // 所属部门ID（必填）- 替代原来的 department
+  roles: string[]; // 角色
   avatar?: string;
   phone?: string;
   email?: string;
   tokenVersion: number;
   createdAt: Date;
   updatedAt: Date;
-  comparePassword(candidatePassword: string): Promise<boolean>; // 改为异步
+  comparePassword(candidatePassword: string): Promise<boolean>;
   incrementTokenVersion(): Promise<void>;
 }
 
@@ -41,19 +40,12 @@ const userSchema = new Schema<IUser>(
       maxlength: [50, '姓名长度不能大于50'],
       default: '默认用户',
     },
-    employeeId: {
-      type: String,
-      trim: true,
-      unique: true,
-      sparse: true,
-      default: '',
-      minlength: [2, '工号长度不能小于2'],
-      maxlength: [20, '工号长度不能大于20'],
-    },
-    department: {
-      type: String,
-      trim: true,
-      maxlength: [50, '部门名称不能大于50'],
+    // 👇 新增：所属部门ID（替代原来的 employeeId 和 department）
+    deptId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Dept',
+      required: [true, '所属部门不能为空'],
+      index: true,
     },
     roles: {
       type: [String],
@@ -103,7 +95,6 @@ const userSchema = new Schema<IUser>(
         delete ret.password;
         delete ret.__v;
 
-        // 确保 _id 被转换为 id
         if (ret._id) {
           ret.id = ret._id.toString();
           delete ret._id;
@@ -128,7 +119,7 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-// ✅ 修正：移除 next 参数，不调用 next()
+// 预处理中间件 - 处理空字符串
 userSchema.pre('validate', function (this: IUser) {
   if (this.email === '') {
     this.email = undefined;
@@ -136,30 +127,24 @@ userSchema.pre('validate', function (this: IUser) {
   if (this.phone === '') {
     this.phone = undefined;
   }
-  if (this.employeeId === '') {
-    this.employeeId = undefined;
-  }
 });
 
-// 👇 修改：使用 bcrypt 加密密码（异步）
+// 密码加密中间件
 userSchema.pre('save', async function (this: IUser) {
   if (!this.isModified('password')) return;
   try {
-    // 使用 bcrypt 异步加密
     this.password = await bcryptUtil.hash(this.password);
   } catch (error) {
     throw error;
   }
 });
 
-// 👇 修改：验证密码方法改为异步
+// 实例方法：验证密码
 userSchema.methods.comparePassword = async function (this: IUser, candidatePassword: string): Promise<boolean> {
   return await bcryptUtil.verify(candidatePassword, this.password);
 };
 
-/**
- * 实例方法：增加 token 版本号
- */
+// 实例方法：增加 token 版本号
 userSchema.methods.incrementTokenVersion = async function (this: IUser): Promise<void> {
   this.tokenVersion += 1;
   await this.save();
