@@ -113,6 +113,22 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // 👇 关键：启用 CORS（放在路由之前）
 app.use(cors());
+// app.use(
+//   cors({
+//     // 1. 允许的前端源（你的前端运行地址，如 Vue 项目默认 5173）
+//     origin: [
+//       'http://localhost:5173', // Vue3 + Vite 默认端口
+//       'http://localhost:8080', // Vue2 / Webpack 默认端口
+//       'http://127.0.0.1:5173', // 兼容 IP 访问
+//     ],
+//     // 2. 允许携带 Cookie/Token（前端请求需配 withCredentials: true）
+//     credentials: true,
+//     // 3. 允许的 HTTP 方法
+//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//     // 4. 允许的请求头（需包含前端自定义头，如 Authorization）
+//     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+//   })
+// );
 // 全局日志中间件
 
 /**

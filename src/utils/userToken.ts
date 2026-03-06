@@ -46,7 +46,7 @@ export const generateUserTokenFromExisting = (user: IUser) => {
   delete userObj.__v;
 
   return {
-    user: userObj,
+    userInfo: userObj,
     ...tokens,
   };
 };
