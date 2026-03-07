@@ -17,7 +17,8 @@ export interface IUser extends Document {
   comparePassword(candidatePassword: string): Promise<boolean>;
   incrementTokenVersion(): Promise<void>;
 }
-
+// 创建一个默认的部门ID（可以使用固定的ObjectId）
+const DEFAULT_DEPT_ID = new Types.ObjectId('000000000000000000000001'); // 临时默认部门ID
 const userSchema = new Schema<IUser>(
   {
     account: {
@@ -44,7 +45,8 @@ const userSchema = new Schema<IUser>(
     deptId: {
       type: Schema.Types.ObjectId,
       ref: 'Dept',
-      required: [true, '所属部门不能为空'],
+      // required: [true, '所属部门不能为空'],
+      default: DEFAULT_DEPT_ID, // 设置默认值
       index: true,
     },
     roles: {

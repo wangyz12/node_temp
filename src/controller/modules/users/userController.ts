@@ -89,47 +89,69 @@ const login = async (req: ExpressRequest, res: ExpressResponse) => {
   }
 };
 // 修改密码
+// 修改密码 - 这个接口不需要操作 deptId，所以不需要修改
 const upDatePsw = async (req: ExpressRequest, res: ExpressResponse, next: ExpressNext) => {
   try {
-    // 1.是否登录
     const userId = req.user?.userId;
     if (!userId) {
-      return res.status(200).json({ code: 1000, data: null, msg: '请先登录' });
+      return res.status(200).json({ code: 401, data: null, msg: '请先登录' });
     }
-    // 2.判断是否为空
+
     const { oldPassword, newPassword } = req.body;
-    if (!oldPassword || !newPassword) {
-      return res.status(200).json({ code: 1000, data: null, msg: '旧密码和新密码不能为空' });
+
+    // 验证参数...
+    if (!oldPassword?.trim()) {
+      return res.status(200).json({ code: 400, data: null, msg: '旧密码不能为空' });
     }
-    // 3.判断是否相等
+
+    if (!newPassword?.trim()) {
+      return res.status(200).json({ code: 400, data: null, msg: '新密码不能为空' });
+    }
+
     if (oldPassword === newPassword) {
-      return res.status(200).json({ code: 1000, data: null, msg: '旧密码不能与新密码相同' });
+      return res.status(200).json({ code: 400, data: null, msg: '新密码不能与旧密码相同' });
     }
-    // 4.获取用户的密码
+
+    if (newPassword.length < 6) {
+      return res.status(200).json({ code: 400, data: null, msg: '新密码长度不能小于6位' });
+    }
+
+    // 查找用户 - deptId 字段会自动使用默认值
     const user = await UserModel.findById(userId).select('+password');
     if (!user) {
-      return res.status(200).json({ code: 1000, data: null, msg: '用户不存在' });
+      return res.status(200).json({ code: 404, data: null, msg: '用户不存在' });
     }
-    // 5.判断旧密码是否相等
-    const isPasswordValid = user.comparePassword(oldPassword);
+
+    // 验证旧密码
+    const isPasswordValid = await user.comparePassword(oldPassword);
     if (!isPasswordValid) {
-      return res.status(200).json({ code: 1000, data: null, msg: '旧密码错误' });
+      return res.status(200).json({ code: 400, data: null, msg: '旧密码错误' });
     }
-    // 6.复制新密码
+
+    // 更新密码
     user.password = newPassword;
-    // 7.更新
     await user.save();
-    // 8.token版本加1
+
+    // 增加token版本号
     await user.incrementTokenVersion();
+
     res.status(200).json({
       code: 200,
-      data: null,
-      msg: '密码修改成功，请重新登录',
+      data: {
+        userId: user._id,
+        username: user.username,
+        account: user.account,
+        message: '密码修改成功，请使用新密码重新登录',
+      },
+      msg: '密码修改成功',
     });
   } catch (error: any) {
+    console.error('修改密码失败:', error);
+
     res.status(500).json({
       code: 500,
-      msg: '服务器内部错误',
+      data: null,
+      msg: process.env.NODE_ENV === 'development' ? error.message : '服务器内部错误',
     });
   }
 };
