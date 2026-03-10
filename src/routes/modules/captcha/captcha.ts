@@ -6,9 +6,9 @@ import { RateLimiterUtil } from '@/utils/rateLimiter.ts';
 const router = Router();
 
 // 获取验证码（需要限流，防止刷验证码）
-router.get('/getCaptcha', RateLimiterUtil.medium, getCaptcha);
+router.get('/getCaptcha', getCaptcha);
 
 // 验证验证码（可选）
-router.post('/verify', RateLimiterUtil.medium, verifyCaptcha);
+router.post('/verify', verifyCaptcha);
 
 export default router;

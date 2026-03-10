@@ -1,37 +1,26 @@
-// src/validators/menu.validator.ts
-import { body } from 'express-validator';
-import utils from '@/utils/utils.js';
+// src/validation/menuViedation.ts
+import { body, param } from 'express-validator';
+import util from '@/utils/utils.js';
 
-// 添加菜单验证
 export const addMenu = [
   body('name')
     .notEmpty()
-    .withMessage('路由名称不能为空')
+    .withMessage('菜单名称不能为空')
     .matches(/^[a-zA-Z][a-zA-Z0-9_]*$/)
-    .withMessage('路由名称必须以字母开头，只能包含字母、数字、下划线')
-    .trim(),
-
+    .withMessage('菜单名称必须以字母开头，只能包含字母、数字、下划线'),
   body('path')
     .notEmpty()
-    .withMessage('路由路径不能为空')
+    .withMessage('路径不能为空')
     .matches(/^\/[a-zA-Z0-9_\-/]*$/)
-    .withMessage('路由路径必须以/开头，只能包含字母、数字、下划线、横线和斜杠')
-    .trim(),
-
-  body('component').notEmpty().withMessage('组件路径不能为空').trim(),
-
-  body('title').notEmpty().withMessage('菜单标题不能为空').trim(),
-
-  body('icon').optional().trim(),
-
-  body('sort').optional().isInt({ min: 0 }).withMessage('排序值不能小于0').toInt(),
-
-  body('pid').optional().isMongoId().withMessage('无效的父级ID'),
-
-  body('type').optional().isIn(['menu', 'button', 'iframe']).withMessage('类型必须是 menu、button 或 iframe'),
-
-  body('hidden').optional().isBoolean().withMessage('hidden 必须是布尔值').toBoolean(),
-
-  body('permissions').optional().isArray().withMessage('permissions 必须是数组'),
-  utils.handleValidationErrors,
+    .withMessage('路径格式不正确'),
+  body('component').notEmpty().withMessage('组件路径不能为空'),
+  body('title').notEmpty().withMessage('标题不能为空'),
+  util.handleValidationErrors,
 ];
+
+export const updateMenu = [
+  param('id').isMongoId().withMessage('无效的菜单ID'),
+  ...addMenu, // 复用添加的验证规则
+];
+
+export const deleteMenu = [param('id').isMongoId().withMessage('无效的菜单ID'), util.handleValidationErrors];

@@ -8,6 +8,7 @@
     "build": "tsc",
     "start": "node --env-file=.env dist/server.js",
     "lint": "eslint src",
+    "init": "tsx scripts/init.ts",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write \"src/**/*.ts\""
   },

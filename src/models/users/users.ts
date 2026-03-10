@@ -7,7 +7,6 @@ export interface IUser extends Document {
   password: string;
   username: string;
   deptId: Types.ObjectId; // 所属部门ID（必填）- 替代原来的 department
-  roles: string[]; // 角色
   avatar?: string;
   phone?: string;
   email?: string;
@@ -48,11 +47,6 @@ const userSchema = new Schema<IUser>(
       // required: [true, '所属部门不能为空'],
       default: DEFAULT_DEPT_ID, // 设置默认值
       index: true,
-    },
-    roles: {
-      type: [String],
-      default: ['employee'],
-      required: [true, '角色不能为空'],
     },
     avatar: {
       type: String,

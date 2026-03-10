@@ -10,9 +10,9 @@ router.post('/register', RateLimiterUtil.register, vaiedation.userViedation.regi
 // 登录
 router.post('/login', RateLimiterUtil.login, vaiedation.userViedation.registerVie.register, utils.handleValidationErrors, controller.userController.login);
 // 修改密码
-router.post('/upDatePsw', authenticate, controller.userController.upDatePsw);
+router.post('/upDatePsw', authenticate, controller.userController.changePassword);
 // 退出登录
-router.post('/loginOut', authenticate, controller.userController.loginOut);
+router.post('/loginOut', authenticate, controller.userController.logout);
 // 修改用户信息
-router.post('/upDateUserInfo', authenticate, vaiedation.userViedation.updateUserInfo.updateUserInfo, utils.handleValidationErrors, controller.userController.upDateUserInfo);
+router.post('/upDateUserInfo', authenticate, vaiedation.userViedation.updateUserInfo.updateUserInfo, utils.handleValidationErrors, controller.userController.updateUserInfo);
 export default router;
