@@ -1,6 +1,7 @@
 import { UserModel } from '@/models/index.ts';
 import { validationResult } from 'express-validator';
 import { generateUserToken, generateUserTokenFromExisting } from '@/utils/userToken.ts';
+import { CaptchaUtil } from '@/utils/captcha.ts';
 // 注册
 const register = async (req: ExpressRequest, res: ExpressResponse) => {
   try {
@@ -39,7 +40,15 @@ const register = async (req: ExpressRequest, res: ExpressResponse) => {
 // 登录
 const login = async (req: ExpressRequest, res: ExpressResponse) => {
   try {
-    const { account, password } = req.body;
+    const { account, password, captchaUuid, captchaCode } = req.body;
+    // 1. 验证验证码
+    if (!captchaUuid || !captchaCode) {
+      return res.status(400).json({ code: 400, msg: '验证码不能为空' });
+    }
+    const isValidCaptcha = CaptchaUtil.verify(captchaUuid, captchaCode);
+    if (!isValidCaptcha) {
+      return res.status(400).json({ code: 400, msg: '验证码错误' });
+    }
     // 1. 验证请求参数
     if (!account || !password) {
       return res.status(400).json({

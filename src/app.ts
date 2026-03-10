@@ -14,6 +14,7 @@ import { fileURLToPath } from 'url';
 import loggerMiddleware from '@/middlewares/logger.ts';
 import { RateLimiterUtil } from '@/utils/rateLimiter.ts';
 import { SecurityConfig } from './config/security.ts'; // 安全相关 Xss 等
+import { startCaptchaCleaner } from '@/utils/captcha.ts';
 import { env } from './config/env.ts';
 import cors from 'cors';
 import './utils/global.ts';
@@ -31,6 +32,8 @@ const __dirname = dirname(__filename);
 // dotenv.config({
 //   path: path.resolve(__dirname, '../.env'), // 从项目根目录加载
 // });
+// 每30 分钟清理一次验证码缓存
+const captchaCleaner = startCaptchaCleaner(30);
 // 验证关键环境变量是否加载
 if (!process.env.PORT) {
   console.warn('⚠️ PORT 环境变量未设置，将使用默认值 3000');
