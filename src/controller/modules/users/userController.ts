@@ -49,7 +49,6 @@ const login = async (req: ExpressRequest, res: ExpressResponse) => {
     if (!isValidCaptcha) {
       return res.status(400).json({ code: 400, msg: '验证码错误' });
     }
-    // 1. 验证请求参数
     if (!account || !password) {
       return res.status(400).json({
         code: 400,
