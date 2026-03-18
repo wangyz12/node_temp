@@ -1,6 +1,8 @@
 // src/types/global/register.ts
-import * as ExpressTypes from './express.ts';
 import { TokenPayload } from '@/utils/jwt.js';
+
+import * as ExpressTypes from './express.ts';
+
 declare global {
   // 自动展开Express模块的所有导出
   type ExpressRequest = ExpressTypes.ExpressRequest;
@@ -10,11 +12,8 @@ declare global {
   type AsyncController = ExpressTypes.AsyncController;
   type Middleware = ExpressTypes.Middleware;
   type ErrorMiddleware = ExpressTypes.ErrorMiddleware;
-  namespace Express {
-    interface Request {
-      user?: TokenPayload; // 扩展 user 属性
-    }
-  }
+  // 使用 express.d.ts 中已经定义的类型
+  // 不需要重新定义，直接引用即可
   // 环境变量配置
   namespace NodeJS {
     interface ProcessEnv {

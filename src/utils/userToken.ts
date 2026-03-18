@@ -1,6 +1,7 @@
-import { jwtUtil } from './jwt.ts';
 import { UserModel } from '@/models/index.ts';
 import { IUser } from '@/models/users/users.ts';
+
+import { jwtUtil } from './jwt.ts';
 
 /**
  * 为用户生成 token（并返回不含密码的用户信息）
@@ -12,7 +13,6 @@ export const generateUserToken = async (user: IUser) => {
   const tokens = jwtUtil.generateTokens({
     userId: user._id.toString(),
     account: user.account,
-    role: user.role,
     tokenVersion: user.tokenVersion,
     // phone 和 email 可以不放在 token 里，需要时从 user 获取
   });
@@ -36,7 +36,6 @@ export const generateUserTokenFromExisting = (user: IUser) => {
   const tokens = jwtUtil.generateTokens({
     userId: user._id.toString(),
     account: user.account,
-    role: user.role,
     tokenVersion: user.tokenVersion,
   });
 

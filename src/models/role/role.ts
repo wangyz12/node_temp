@@ -1,5 +1,5 @@
 // src/models/role.model.ts
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IRole extends Document {
   name: string; // 角色名称（如：admin、manager、employee）

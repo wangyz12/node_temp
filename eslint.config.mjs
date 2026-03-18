@@ -56,9 +56,9 @@ export default tseslint.config(
         argsIgnorePattern: '^_', // 允许以 _ 开头的参数未使用
         varsIgnorePattern: '^_' 
       }],
-      '@typescript-eslint/no-explicit-any': 'warn', // 避免使用 any
+      '@typescript-eslint/no-explicit-any': 'off', // 关闭 any 类型警告
       '@typescript-eslint/explicit-function-return-type': 'off', // Express 路由中可省略返回类型
-      '@typescript-eslint/no-non-null-assertion': 'warn',
+      '@typescript-eslint/no-non-null-assertion': 'off', // 关闭非空断言警告
       
       // ===== 导入排序规则 =====
       'simple-import-sort/imports': ['error', {

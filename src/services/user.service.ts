@@ -1,7 +1,10 @@
 // src/services/user.service.ts
-import { UserModel } from '@/models/users/users.ts';
-import { DeptModel } from '@/models/dept/dept.ts';
 import { Types } from 'mongoose';
+
+import { DeptModel } from '@/models/dept/dept.ts';
+import { UserModel } from '@/models/users/users.ts';
+import { UserRoleModel } from '@/models/userRole/userRole.ts';
+import { RoleModel } from '@/models/role/role.ts';
 
 export class UserService {
   /**
@@ -61,7 +64,23 @@ export class UserService {
       throw new Error('用户不存在');
     }
 
-    return user;
+    // 获取用户角色信息
+    const userRoles = await UserRoleModel.find({ userId: id }).populate<{ roleId: any }>('roleId');
+    const roles = userRoles.map(ur => {
+      const role = ur.roleId as any;
+      return {
+        id: role._id ? role._id.toString() : role.id,
+        name: role.name,
+        label: role.label,
+        dataScope: role.dataScope
+      };
+    });
+    
+    // 转换为普通对象并添加角色信息
+    const userObj = user.toObject() as any;
+    userObj.roles = roles;
+    
+    return userObj;
   }
 
   /**

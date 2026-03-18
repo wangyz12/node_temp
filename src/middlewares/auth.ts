@@ -1,6 +1,6 @@
 // src/middlewares/auth.middleware.ts
-import { jwtUtil } from '@/utils/jwt.ts';
 import { UserModel } from '@/models/users/users.ts';
+import { jwtUtil } from '@/utils/jwt.ts';
 
 // 扩展 Request 类型
 declare global {

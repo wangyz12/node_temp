@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Model } from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface IRoute extends Document {
   _id: mongoose.Types.ObjectId; // 路由ID

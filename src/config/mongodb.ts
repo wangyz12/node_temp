@@ -1,5 +1,6 @@
-import mongoose from 'mongoose';
 import chalk from 'chalk';
+import mongoose from 'mongoose';
+
 import { env } from './env.ts';
 
 /**

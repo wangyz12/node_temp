@@ -1,5 +1,5 @@
 // src/models/userRole.model.ts
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IUserRole extends Document {
   userId: mongoose.Types.ObjectId;

@@ -1,5 +1,6 @@
 // src/models/users/users.ts
-import mongoose, { Schema, Document, CallbackError, Types } from 'mongoose';
+import mongoose, { CallbackError, Document, Schema, Types } from 'mongoose';
+
 import { bcryptUtil } from '@/utils/bcrypt.ts';
 
 export interface IUser extends Document {
@@ -10,6 +11,7 @@ export interface IUser extends Document {
   avatar?: string;
   phone?: string;
   email?: string;
+  status: string; // 用户状态：0-正常，1-停用
   tokenVersion: number;
   createdAt: Date;
   updatedAt: Date;
@@ -79,6 +81,12 @@ const userSchema = new Schema<IUser>(
         message: '邮箱格式不正确',
       },
     },
+    // 用户状态：0-正常，1-停用
+    status: {
+      type: String,
+      enum: ['0', '1'],
+      default: '0',
+    },
     tokenVersion: {
       type: Number,
       default: 0,
@@ -137,7 +145,7 @@ userSchema.pre('save', async function (this: IUser) {
 
 // 实例方法：验证密码
 userSchema.methods.comparePassword = async function (this: IUser, candidatePassword: string): Promise<boolean> {
-  return await bcryptUtil.verify(candidatePassword, this.password);
+  return bcryptUtil.verify(candidatePassword, this.password);
 };
 
 // 实例方法：增加 token 版本号

@@ -21,7 +21,7 @@ const captchaStore = new Map<
 function cleanExpiredCaptchas(force: boolean = false) {
   const now = Date.now();
   let expiredCount = 0;
-  let totalCount = captchaStore.size;
+  const totalCount = captchaStore.size;
 
   for (const [key, value] of captchaStore.entries()) {
     if (value.expires < now) {
@@ -149,7 +149,7 @@ export class CaptchaUtil {
     const operators = ['+', '-', '*'];
     const operator = operators[Math.floor(Math.random() * operators.length)];
 
-    let expression = `${num1}${operator}${num2}=?`;
+    const expression = `${num1}${operator}${num2}=?`;
     let result: number;
 
     switch (operator) {

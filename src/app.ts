@@ -8,18 +8,21 @@
  */
 // import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
+
 import loggerMiddleware from '@/middlewares/logger.ts';
-import { RateLimiterUtil } from '@/utils/rateLimiter.ts';
-import { SecurityConfig } from './config/security.ts'; // 安全相关 Xss 等
 import { startCaptchaCleaner } from '@/utils/captcha.ts';
+import { RateLimiterUtil } from '@/utils/rateLimiter.ts';
+
 import { env } from './config/env.ts';
-import cors from 'cors';
-import './utils/global.ts';
+import { SecurityConfig } from './config/security.ts'; // 安全相关 Xss 等
 // 导入路由模块
 import router from './routes/index.ts';
+
+import './utils/global.ts';
 /**
  * 兼容 ESM 环境下的 __dirname 变量
  *

@@ -1,9 +1,10 @@
 // src/middlewares/dataScope.middleware.ts
-import { Request, Response, NextFunction } from 'express';
-import { UserRoleModel } from '@/models/userRole/userRole.ts';
-import { RoleDeptModel } from '@/models/roleDept/roleDept.ts';
-import { RoleModel } from '@/models/role/role.ts';
+import { NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
+
+import { RoleModel } from '@/models/role/role.ts';
+import { RoleDeptModel } from '@/models/roleDept/roleDept.ts';
+import { UserRoleModel } from '@/models/userRole/userRole.ts';
 
 /**
  * 数据权限过滤

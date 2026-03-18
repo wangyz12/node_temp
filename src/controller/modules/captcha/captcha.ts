@@ -1,5 +1,6 @@
 // src/controllers/captcha.controller.ts
 import { Request, Response } from 'express';
+
 import { CaptchaUtil } from '@/utils/captcha.ts';
 
 /**
@@ -14,7 +15,7 @@ export const getCaptcha = async (req: Request, res: Response) => {
       console.log(`主动删除旧验证码: ${uuid}`);
       CaptchaUtil.remove(uuid); // 需要新增这个方法
     }
-    let result: any = CaptchaUtil.generateCharCaptcha();
+    const result: any = CaptchaUtil.generateCharCaptcha();
     // 返回数据
     res.json({
       code: 200,

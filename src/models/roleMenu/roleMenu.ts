@@ -1,5 +1,5 @@
 // src/models/roleMenu.model.ts
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IRoleMenu extends Document {
   roleId: mongoose.Types.ObjectId;

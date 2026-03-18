@@ -2,12 +2,7 @@ import { body } from 'express-validator';
 // 注册验证规则
 const register = [
   // 账号验证
-  body('account')
-    .notEmpty()
-    .withMessage('账号不能为空')
-    .isLength({ min: 2, max: 50 })
-    .withMessage('账号长度在2-50之间')
-    .trim(),
+  body('account').notEmpty().withMessage('账号不能为空').isLength({ min: 2, max: 50 }).withMessage('账号长度在2-50之间').trim(),
 
   // 密码验证
   body('password')

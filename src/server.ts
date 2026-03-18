@@ -7,11 +7,13 @@
  * 并处理服务器的启动、错误和监听事件。
  */
 
+import chalk from 'chalk';
 import debugLib from 'debug';
 import http from 'http';
-import chalk from 'chalk';
+
 import { env } from './config/env.ts';
 import { connectMongoDB } from './config/mongodb.ts';
+import { initDatabase } from './scripts/initDatabase.ts';
 import app from './app.ts';
 // 初始化调试模块，命名空间为 'my-backend-admin:server'
 const debug = debugLib('my-backend-admin:server');
@@ -154,7 +156,7 @@ function onListening(): void {
 
   // 输出调试信息
   debug('Listening on ' + bind);
-
+  // initDatabase(); // 注释掉，手动运行 npm run init-db 初始化数据库
   // 使用更美观的控制台输出
   console.log(chalk.green('\n🎉 服务启动成功！'));
   console.log(chalk.cyan('━'.repeat(50)));

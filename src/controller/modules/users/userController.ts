@@ -1,11 +1,12 @@
 // src/controller/modules/users/userController.ts
-import { UserModel } from '@/models/index.ts';
 import { validationResult } from 'express-validator';
-import { generateUserToken, generateUserTokenFromExisting } from '@/utils/userToken.ts';
-import { CaptchaUtil } from '@/utils/captcha.ts';
-import { dataScope } from '@/middlewares/dataScope.ts';
+
 import { authenticate } from '@/middlewares/auth';
+import { dataScope } from '@/middlewares/dataScope.ts';
+import { UserModel } from '@/models/index.ts';
 import { UserService } from '@/services/user.service';
+import { CaptchaUtil } from '@/utils/captcha.ts';
+import { generateUserToken, generateUserTokenFromExisting } from '@/utils/userToken.ts';
 
 // 创建服务实例
 const userService = new UserService();
@@ -123,16 +124,17 @@ const register = async (req: ExpressRequest, res: ExpressResponse) => {
  */
 const login = async (req: ExpressRequest, res: ExpressResponse) => {
   try {
-    const { account, password, captchaUuid, captchaCode } = req.body;
+    const { account, password, uuid, code } = req.body;
 
     // 1. 验证验证码
-    if (!captchaUuid || !captchaCode) {
+    if (!uuid || !code) {
       return res.status(400).json({ code: 400, msg: '验证码不能为空' });
     }
 
-    const isValidCaptcha = CaptchaUtil.verify(captchaUuid, captchaCode);
+    const isValidCaptcha = CaptchaUtil.verify(uuid, code);
     if (!isValidCaptcha) {
-      return res.status(400).json({ code: 400, msg: '验证码错误' });
+      console.log('验证码验证失败，UUID:', uuid, 'Code:', code);
+      return res.status(400).json({ code: 400, msg: '验证码错误或已过期，请刷新验证码' });
     }
 
     if (!account || !password) {
@@ -143,18 +145,26 @@ const login = async (req: ExpressRequest, res: ExpressResponse) => {
     }
 
     // 2. 查找用户（需要密码字段用于验证）
+    console.log('查找用户:', account);
     const user = await UserModel.findOne({ account }).select('+password').populate('deptId', 'name code'); // 关联部门信息
 
     if (!user) {
+      console.log('用户未找到:', account);
       return res.status(401).json({
         code: 401,
         msg: '用户名或密码错误',
       });
     }
 
+    console.log('找到用户:', user.account, '密码长度:', user.password?.length);
+    
     // 3. 验证密码
+    console.log('验证密码，输入密码长度:', password?.length);
     const isPasswordValid = await user.comparePassword(password);
+    console.log('密码验证结果:', isPasswordValid);
+    
     if (!isPasswordValid) {
+      console.log('密码验证失败');
       return res.status(401).json({
         code: 401,
         msg: '用户名或密码错误',
@@ -512,6 +522,67 @@ export const deleteUser = [
   },
 ];
 
+/**
+ * 批量删除用户
+ */
+export const batchDeleteUsers = [
+  authenticate,
+  async (req: ExpressRequest, res: ExpressResponse) => {
+    try {
+      const { ids } = req.body;
+
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ code: 400, msg: '请选择要删除的用户' });
+      }
+
+      // 不能删除自己
+      const userId = req.user?.userId;
+      if (ids.includes(userId)) {
+        return res.status(400).json({ code: 400, msg: '不能删除当前登录账号' });
+      }
+
+      // 批量删除
+      for (const id of ids) {
+        await userService.deleteUser(id);
+      }
+
+      res.json({
+        code: 200,
+        msg: '批量删除成功',
+      });
+    } catch (error) {
+      console.error('批量删除用户失败:', error);
+      res.status(500).json({ code: 500, msg: '服务器错误' });
+    }
+  },
+];
+
+/**
+ * 获取当前用户信息
+ */
+export const getCurrentUser = [
+  authenticate,
+  async (req: ExpressRequest, res: ExpressResponse) => {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        return res.status(401).json({ code: 401, msg: '请先登录' });
+      }
+
+      const user = await userService.getUserById(userId);
+
+      res.json({
+        code: 200,
+        msg: 'success',
+        data: user,
+      });
+    } catch (error) {
+      console.error('获取当前用户信息失败:', error);
+      res.status(500).json({ code: 500, msg: '服务器错误' });
+    }
+  },
+];
+
 export default {
   register,
   login,
@@ -523,4 +594,6 @@ export default {
   createUser,
   updateUser,
   deleteUser,
+  batchDeleteUsers,
+  getCurrentUser,
 };

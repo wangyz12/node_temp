@@ -1,5 +1,5 @@
 // src/models/dept.model.ts
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IDept extends Document {
   name: string; // 部门名称（如：总公司、北京分公司）
