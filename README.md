@@ -3,7 +3,9 @@
 # Node.js Express MongoDB 项目模板
 
 一个基于 Express + TypeScript + MongoDB 的后端项目模板，提供完整的用户认证、接口验证、日志管理等功能。
+后端仓库地址： https://gitee.com/W_admin_code/node_temp
 
+前端仓库地址： https://gitee.com/W_admin_code/my-vue3-project (请根据实际情况更新此地址)
 ## 功能特性
 
 - **Express + TypeScript** - 使用 TypeScript 开发，提供类型安全
