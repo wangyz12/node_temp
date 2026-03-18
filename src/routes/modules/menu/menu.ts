@@ -12,10 +12,10 @@ router.use(authenticate);
 router.get('/tree', checkPermission('system:menu:list'), controller.menuController.findMenu);
 
 // 添加菜单
-router.post('/addMenu', checkPermission('system:menu:add'), vaiedation.menuViedation.addMenu, controller.menuController.addMenu);
+router.post('/addMenu', checkPermission('system:menu:add'), controller.menuController.addMenu);
 
 // 修改菜单
-router.post('/updateMenu', checkPermission('system:menu:edit'), vaiedation.menuViedation.addMenu, controller.menuController.updateMenu);
+router.post('/updateMenu', checkPermission('system:menu:edit'), controller.menuController.updateMenu);
 
 // 删除菜单
 router.post('/delMenu', checkPermission('system:menu:remove'), controller.menuController.delMenu);

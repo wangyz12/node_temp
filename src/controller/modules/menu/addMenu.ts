@@ -43,9 +43,12 @@ export const addMenu = async (req: ExpressRequest, res: ExpressResponse) => {
       external: external || false,
       target: target || '_self',
     };
-    // 如果有 pid，添加到数据中
+    // 处理 pid 字段
     if (pid) {
       menuData.pid = pid;
+    } else {
+      // 如果 pid 是空字符串或未定义，设置为 null（表示顶级菜单）
+      menuData.pid = null;
     }
     // 5. 创建菜单
     const menu = await MenuModel.create(menuData);

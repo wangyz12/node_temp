@@ -51,7 +51,8 @@ app.use(SecurityConfig.hideServerInfo);
 
 // 2. CORS（必须在最前面）
 // app.use(cors(SecurityConfig.corsOptions));
-
+// 👇 关键：启用 CORS（放在路由之前）
+app.use(cors());
 // 3. Helmet 安全头
 app.use(SecurityConfig.helmetConfig);
 
@@ -117,8 +118,6 @@ app.use(express.static(path.join(__dirname, 'public')));
  * ============================================
  */
 
-// 👇 关键：启用 CORS（放在路由之前）
-app.use(cors());
 // app.use(
 //   cors({
 //     // 1. 允许的前端源（你的前端运行地址，如 Vue 项目默认 5173）
