@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "node --env-file=.env --import tsx --watch src/server.ts",
-    "build": "tsc --noEmit",
-    "start": "node dist/server.js",
+    "build": "tsc --noEmit && echo 'TypeScript check passed'",
+    "start": "node --env-file=.env --import tsx src/server.ts",
     "lint": "eslint src",
     "init": "tsx scripts/init.ts",
     "init-db": "node --env-file=.env --import tsx src/scripts/initDatabase.ts",

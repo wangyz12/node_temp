@@ -12,7 +12,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
-    "noEmit": true, // 👈 只检查不输出（因为 railway 不需要 build 产物）
+    "noEmit": false, // 👈 生成编译输出
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]

@@ -1,43 +1,20 @@
 // src/types/global/register.ts
-import * as ExpressTypes from './express.ts';
+// 这个文件用于声明全局类型
+
+// 直接从 express 导入类型
+import type { Request, Response, NextFunction } from 'express';
 
 declare global {
-  // 自动展开Express模块的所有导出
-  type ExpressRequest = ExpressTypes.ExpressRequest;
-  type ExpressResponse = ExpressTypes.ExpressResponse;
-  type ExpressNext = ExpressTypes.ExpressNext;
-  type Controller = ExpressTypes.Controller;
-  type AsyncController = ExpressTypes.AsyncController;
-  type Middleware = ExpressTypes.Middleware;
-  type ErrorMiddleware = ExpressTypes.ErrorMiddleware;
+  // 定义 Express 类型别名
+  type ExpressRequest = Request;
+  type ExpressResponse = Response;
+  type ExpressNext = NextFunction;
   
-  // 明确声明 Express 命名空间，确保类型一致性
-  namespace Express {
-    interface Request {
-      user?: {
-        userId: string;
-        account: string;
-        username?: string;
-        deptId?: string;
-        isSuperAdmin?: boolean;
-        [key: string]: any;
-      };
-      dataScope?: {
-        deptIds: string[];
-        dataScope: string;
-        deptAlias: string;
-        userAlias: string;
-      };
-      userPermissions?: {
-        menus: any[];
-        permissions: string[];
-        dataScope: {
-          deptIds: string[];
-          dataScope: string;
-        };
-      };
-    }
-  }
+  // 定义控制器类型
+  type Controller = (req: ExpressRequest, res: ExpressResponse, next: ExpressNext) => any;
+  type AsyncController = (req: ExpressRequest, res: ExpressResponse, next: ExpressNext) => Promise<any>;
+  type Middleware = (req: ExpressRequest, res: ExpressResponse, next: ExpressNext) => void;
+  type ErrorMiddleware = (err: any, req: ExpressRequest, res: ExpressResponse, next: ExpressNext) => void;
 
   // 环境变量配置
   namespace NodeJS {
