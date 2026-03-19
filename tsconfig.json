@@ -5,14 +5,13 @@
     "moduleResolution": "bundler",
     "outDir": "./dist",
     "rootDir": "./src",
-    "strict": false, // 👈 关闭严格模式
-    "noImplicitAny": false, // 👈 允许隐式 any
-    "skipLibCheck": true, // 👈 跳过库检查
+    "strict": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "allowImportingTsExtensions": true,
-    "noEmit": false, // 👈 生成编译输出
+    "noEmit": true, // tsup负责编译，tsc只做类型检查
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
