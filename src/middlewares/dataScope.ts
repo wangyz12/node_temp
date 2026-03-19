@@ -83,7 +83,7 @@ async function getChildDepts(deptId: string): Promise<string[]> {
   const children = await DeptModel.find({ parentId: deptId });
   let ids: string[] = [];
 
-  for (const child of children) {
+  for (const child of children as any[]) {
     ids.push(child._id.toString());
     const grandChildren = await getChildDepts(child._id.toString());
     ids = [...ids, ...grandChildren];

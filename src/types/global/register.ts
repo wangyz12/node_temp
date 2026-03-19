@@ -1,6 +1,4 @@
 // src/types/global/register.ts
-import { TokenPayload } from '@/utils/jwt.js';
-
 import * as ExpressTypes from './express.ts';
 
 declare global {

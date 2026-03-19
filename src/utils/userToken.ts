@@ -9,7 +9,7 @@ import { jwtUtil } from './jwt.ts';
  */
 export const generateUserToken = async (user: IUser) => {
   // 从 user 中获取 role（roles 数组的第一个）
-  const role = user.roles && user.roles.length > 0 ? user.roles[0] : 'employee';
+  const role = user.roles && Array.isArray(user.roles) && user.roles.length > 0 ? user.roles[0] : 'employee';
 
   // 1. 生成 token - 👈 加上 role
   const tokens = jwtUtil.generateTokens({
@@ -35,7 +35,7 @@ export const generateUserToken = async (user: IUser) => {
  */
 export const generateUserTokenFromExisting = (user: IUser) => {
   // 从 user 中获取 role（roles 数组的第一个）
-  const role = user.roles && user.roles.length > 0 ? user.roles[0] : 'employee';
+  const role = user.roles && Array.isArray(user.roles) && user.roles.length > 0 ? user.roles[0] : 'employee';
 
   // 1. 生成 token - 👈 加上 role
   const tokens = jwtUtil.generateTokens({
