@@ -45,6 +45,7 @@ console.log(`🌍 当前环境: ${process.env.NODE_ENV || 'development'}`);
 console.log(`🚪 端口: ${process.env.PORT || 3000}`);
 // 创建 Express 应用实例
 const app: Express = express();
+
 app.use(loggerMiddleware);
 // 1. 隐藏服务器信息
 app.use(SecurityConfig.hideServerInfo);
@@ -135,7 +136,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 //   })
 // );
 // 全局日志中间件
-
+// 在 app 初始化后、路由之前添加
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV,
+  });
+});
 /**
  * 根路由
  * 处理所有对 '/' 的请求

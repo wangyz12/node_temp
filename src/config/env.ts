@@ -27,7 +27,7 @@ export const env = {
 
   // MongoDB 配置（新增）
   MONGODB: {
-    URI: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/my_admin',
+    URI: process.env.MONGO_URL || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/my_admin',
     DB_NAME: process.env.MONGODB_DB_NAME || 'my_admin',
     // 连接选项
     OPTIONS: {
