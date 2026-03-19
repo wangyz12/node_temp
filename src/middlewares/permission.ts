@@ -17,8 +17,8 @@ export const checkPermission = (permission: string) => {
 
       // 检查用户是否是超级管理员（拥有admin角色）
       const userRoles = await userRoleService.getUserRoles(userId);
-      const isSuperAdmin = userRoles.some(role => role.name === 'admin');
-      
+      const isSuperAdmin = userRoles.some((role: any) => role.name === 'admin');
+
       // 如果是超级管理员，跳过权限检查
       if (isSuperAdmin) {
         return next();

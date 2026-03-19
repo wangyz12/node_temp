@@ -15,32 +15,23 @@ export class NewRoleController {
 
       // 构建查询条件 - 简化版，只查询未删除的
       const conditions: any = {};
-      
+
       // 只查询未删除的角色
       conditions.delFlag = { $ne: '1' };
-      
+
       if (keyword) {
-        conditions.$or = [
-          { name: new RegExp(keyword as string, 'i') },
-          { label: new RegExp(keyword as string, 'i') }
-        ];
+        conditions.$or = [{ name: new RegExp(keyword as string, 'i') }, { label: new RegExp(keyword as string, 'i') }];
       }
-      
+
       if (status !== undefined && status !== '') {
         conditions.status = status;
       }
 
       // 查询数据
-      const [roles, total] = await Promise.all([
-        RoleModel.find(conditions)
-          .skip(skip)
-          .limit(Number(limit))
-          .sort({ createdAt: -1 }),
-        RoleModel.countDocuments(conditions)
-      ]);
+      const [roles, total] = await Promise.all([RoleModel.find(conditions).skip(skip).limit(Number(limit)).sort({ createdAt: -1 }), RoleModel.countDocuments(conditions)]);
 
       // 格式化响应数据
-      const formattedRoles = roles.map(role => ({
+      const formattedRoles = roles.map((role) => ({
         id: role._id.toString(),
         name: role.name,
         label: role.label,
@@ -48,7 +39,7 @@ export class NewRoleController {
         status: role.status,
         remark: role.remark || '',
         createdAt: role.createdAt,
-        updatedAt: role.updatedAt
+        updatedAt: role.updatedAt,
       }));
 
       res.json({
@@ -61,9 +52,9 @@ export class NewRoleController {
             page: Number(page),
             limit: Number(limit),
             total,
-            pages: Math.ceil(total / Number(limit))
-          }
-        }
+            pages: Math.ceil(total / Number(limit)),
+          },
+        },
       });
     } catch (error) {
       console.error('获取角色列表失败:', error);
@@ -76,21 +67,23 @@ export class NewRoleController {
    */
   async getAllRoles(req: ExpressRequest, res: ExpressResponse) {
     try {
-      const roles = await RoleModel.find({ 
+      const roles = await RoleModel.find({
         delFlag: { $ne: '1' },
-        status: '0'
-      }).select('_id name label').sort({ createdAt: 1 });
+        status: '0',
+      })
+        .select('_id name label')
+        .sort({ createdAt: 1 });
 
-      const formattedRoles = roles.map(role => ({
+      const formattedRoles = roles.map((role) => ({
         id: role._id.toString(),
         name: role.name,
-        label: role.label
+        label: role.label,
       }));
 
       res.json({
         code: 200,
         msg: 'success',
-        data: formattedRoles
+        data: formattedRoles,
       });
     } catch (error) {
       console.error('获取所有角色失败:', error);
@@ -121,8 +114,8 @@ export class NewRoleController {
           status: role.status,
           remark: role.remark || '',
           createdAt: role.createdAt,
-          updatedAt: role.updatedAt
-        }
+          updatedAt: role.updatedAt,
+        },
       });
     } catch (error) {
       console.error('获取角色详情失败:', error);
@@ -149,7 +142,7 @@ export class NewRoleController {
         dataScope,
         status,
         remark,
-        delFlag: '0'
+        delFlag: '0',
       });
 
       res.status(201).json({
@@ -158,8 +151,8 @@ export class NewRoleController {
         data: {
           id: role._id.toString(),
           name: role.name,
-          label: role.label
-        }
+          label: role.label,
+        },
       });
     } catch (error) {
       console.error('创建角色失败:', error);
@@ -194,8 +187,8 @@ export class NewRoleController {
         data: {
           id: role._id.toString(),
           name: role.name,
-          label: role.label
-        }
+          label: role.label,
+        },
       });
     } catch (error) {
       console.error('更新角色失败:', error);
@@ -226,7 +219,7 @@ export class NewRoleController {
 
       res.json({
         code: 200,
-        msg: '删除成功'
+        msg: '删除成功',
       });
     } catch (error) {
       console.error('删除角色失败:', error);
@@ -248,12 +241,12 @@ export class NewRoleController {
 
       // 获取角色关联的菜单ID
       const roleMenus = await UserRoleModel.find({ roleId }).select('menuId');
-      const menuIds = roleMenus.map(rm => rm.menuId);
+      const menuIds = roleMenus.map((rm: any) => rm.menuId);
 
       res.json({
         code: 200,
         msg: 'success',
-        data: menuIds
+        data: menuIds,
       });
     } catch (error) {
       console.error('获取角色菜单失败:', error);
@@ -279,17 +272,17 @@ export class NewRoleController {
 
       // 创建新的关联
       if (menuIds && menuIds.length > 0) {
-        const roleMenuDocs = menuIds.map(menuId => ({
+        const roleMenuDocs = menuIds.map((menuId: any) => ({
           roleId,
           menuId,
-          userId: req.user?.userId || 'system'
+          userId: req.user?.userId || 'system',
         }));
         await UserRoleModel.insertMany(roleMenuDocs);
       }
 
       res.json({
         code: 200,
-        msg: '菜单分配成功'
+        msg: '菜单分配成功',
       });
     } catch (error) {
       console.error('分配角色菜单失败:', error);

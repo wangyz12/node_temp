@@ -4,7 +4,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-
+.meteor/
 # 环境变量文件 - 包含敏感信息，绝对不能上传
 .env
 .env.*
