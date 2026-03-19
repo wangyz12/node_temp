@@ -46,6 +46,16 @@ console.log(`🌍 当前环境: ${process.env.NODE_ENV || 'development'}`);
 console.log(`🚪 端口: ${process.env.PORT || 3000}`);
 // 创建 Express 应用实例
 const app: Express = express();
+
+app.use(loggerMiddleware);
+app.use(cors());
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
+});
 app.get('/api/init', async (req, res) => {
   if (req.query.secret !== 'wang1993') {
     return res.status(403).json({ error: 'Forbidden' });
@@ -58,26 +68,14 @@ app.get('/api/init', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-app.use(loggerMiddleware);
 // 1. 隐藏服务器信息
 app.use(SecurityConfig.hideServerInfo);
 
-// 2. CORS（必须在最前面）
-// app.use(cors(SecurityConfig.corsOptions));
-// 👇 关键：启用 CORS（放在路由之前）
-app.use(cors());
 // 3. Helmet 安全头
 app.use(SecurityConfig.helmetConfig);
 
 // 4. 防点击劫持
 app.use(SecurityConfig.frameguard);
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-  });
-});
 
 // 5. 全局限流
 // app.use(SecurityConfig.globalLimiter);
