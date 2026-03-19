@@ -10,8 +10,35 @@ declare global {
   type AsyncController = ExpressTypes.AsyncController;
   type Middleware = ExpressTypes.Middleware;
   type ErrorMiddleware = ExpressTypes.ErrorMiddleware;
-  // 使用 express.d.ts 中已经定义的类型
-  // 不需要重新定义，直接引用即可
+  
+  // 明确声明 Express 命名空间，确保类型一致性
+  namespace Express {
+    interface Request {
+      user?: {
+        userId: string;
+        account: string;
+        username?: string;
+        deptId?: string;
+        isSuperAdmin?: boolean;
+        [key: string]: any;
+      };
+      dataScope?: {
+        deptIds: string[];
+        dataScope: string;
+        deptAlias: string;
+        userAlias: string;
+      };
+      userPermissions?: {
+        menus: any[];
+        permissions: string[];
+        dataScope: {
+          deptIds: string[];
+          dataScope: string;
+        };
+      };
+    }
+  }
+
   // 环境变量配置
   namespace NodeJS {
     interface ProcessEnv {

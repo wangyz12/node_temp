@@ -2,20 +2,6 @@
 import { UserModel } from '@/models/users/users.ts';
 import { jwtUtil } from '@/utils/jwt.ts';
 
-// 扩展 Request 类型
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        userId: string;
-        account: string;
-        deptId?: string;
-        [key: string]: any;
-      };
-    }
-  }
-}
-
 /**
  * 认证中间件
  * 验证用户是否已登录

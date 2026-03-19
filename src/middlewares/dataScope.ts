@@ -92,15 +92,4 @@ async function getChildDepts(deptId: string): Promise<string[]> {
   return ids;
 }
 
-// 扩展 Request 类型
-declare global {
-  namespace Express {
-    interface Request {
-      dataScope?: {
-        deptIds: string[];
-        deptAlias: string;
-        userAlias: string;
-      };
-    }
-  }
-}
+
