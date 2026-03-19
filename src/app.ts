@@ -23,7 +23,7 @@ import { SecurityConfig } from './config/security.ts'; // 安全相关 Xss 等
 import router from './routes/index.ts';
 
 import './utils/global.ts';
-import { initDatabase } from './scripts/initDatabase.js';
+
 /**
  * 兼容 ESM 环境下的 __dirname 变量
  *
@@ -56,18 +56,7 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
   });
 });
-app.get('/api/init', async (req, res) => {
-  if (req.query.secret !== 'wang1993') {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-  try {
-    // 调用你的初始化函数
-    await initDatabase();
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+
 // 1. 隐藏服务器信息
 app.use(SecurityConfig.hideServerInfo);
 

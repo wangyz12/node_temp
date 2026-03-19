@@ -156,7 +156,7 @@ function onListening(): void {
 
   // 输出调试信息
   debug('Listening on ' + bind);
-  // initDatabase(); // 注释掉，手动运行 npm run init-db 初始化数据库
+  initDatabase(); // 注释掉，手动运行 npm run init-db 初始化数据库
   // 使用更美观的控制台输出
   console.log(chalk.green('\n🎉 服务启动成功！'));
   console.log(chalk.cyan('━'.repeat(50)));
