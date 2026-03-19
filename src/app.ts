@@ -67,7 +67,7 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
   });
 });
-app.get('/api/init-db', async (req, res) => {
+app.get('/init', async (req, res) => {
   if (req.query.secret !== 'wang1993') {
     return res.status(403).json({ error: 'Forbidden' });
   }
