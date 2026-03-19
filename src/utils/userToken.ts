@@ -1,6 +1,5 @@
 import { UserModel } from '@/models/index.ts';
 import { IUser } from '@/models/users/users.ts';
-
 import { jwtUtil } from './jwt.ts';
 
 /**
@@ -9,12 +8,15 @@ import { jwtUtil } from './jwt.ts';
  * @returns 包含用户信息和 token 的对象
  */
 export const generateUserToken = async (user: IUser) => {
-  // 1. 生成 token
+  // 从 user 中获取 role（roles 数组的第一个）
+  const role = user.roles && user.roles.length > 0 ? user.roles[0] : 'employee';
+
+  // 1. 生成 token - 👈 加上 role
   const tokens = jwtUtil.generateTokens({
     userId: user._id.toString(),
     account: user.account,
     tokenVersion: user.tokenVersion,
-    // phone 和 email 可以不放在 token 里，需要时从 user 获取
+    role, // 加上 role
   });
 
   // 2. 重新查询用户信息（不包含密码）
@@ -32,11 +34,15 @@ export const generateUserToken = async (user: IUser) => {
  * @returns 包含用户信息和 token 的对象
  */
 export const generateUserTokenFromExisting = (user: IUser) => {
-  // 1. 生成 token
+  // 从 user 中获取 role（roles 数组的第一个）
+  const role = user.roles && user.roles.length > 0 ? user.roles[0] : 'employee';
+
+  // 1. 生成 token - 👈 加上 role
   const tokens = jwtUtil.generateTokens({
     userId: user._id.toString(),
     account: user.account,
     tokenVersion: user.tokenVersion,
+    role, // 加上 role
   });
 
   // 2. 转换为普通对象并删除密码
@@ -45,7 +51,7 @@ export const generateUserTokenFromExisting = (user: IUser) => {
   delete userObj.__v;
 
   return {
-    userInfo: userObj,
+    user: userObj, // 注意这里返回的是 user，不是 userInfo
     ...tokens,
   };
 };

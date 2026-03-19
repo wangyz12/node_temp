@@ -13,6 +13,7 @@ export interface IUser extends Document {
   email?: string;
   status: string; // 用户状态：0-正常，1-停用
   tokenVersion: number;
+  roles?: any;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;

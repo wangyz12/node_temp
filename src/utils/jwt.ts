@@ -5,11 +5,11 @@ import { env } from '@/config/env.ts'; // 从你的 env.ts 导入
 // 配置token的对象类型，可自行添加属性
 export interface TokenPayload {
   userId: string;
-  email?: string;
+  // email?: string;
   role?: string;
   account: string;
   tokenVersion: number;
-  phone?: string;
+  // phone?: string;
 }
 // 返回的token
 export interface JwtTokens {
