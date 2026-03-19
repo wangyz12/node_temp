@@ -1,0 +1,12 @@
+{
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "echo 'Build skipped - using pre-built dist'"
+  },
+  "deploy": {
+    "startCommand": "node dist/server.js",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 5,
+    "restartPolicyType": "ON_FAILURE"
+  }
+}
