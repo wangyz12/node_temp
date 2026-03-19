@@ -5,12 +5,10 @@ declare global {
   namespace Express {
     interface Request {
       user?: {
+        [key: string]: any;
         userId: string;
         account: string;
-        username?: string;
         deptId?: string;
-        isSuperAdmin?: boolean;
-        [key: string]: any;
       };
       dataScope?: {
         deptIds: string[];

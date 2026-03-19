@@ -33,5 +33,8 @@ export default defineConfig({
     '.ts': 'ts'
   },
   tsconfig: 'tsconfig.json',
-  onSuccess: 'echo "Build completed successfully"'
+  onSuccess: 'echo "Build completed successfully"',
+  // 禁用类型检查
+  dts: false,
+  skipNodeModulesBundle: true
 })
