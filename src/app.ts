@@ -59,7 +59,13 @@ app.use(SecurityConfig.helmetConfig);
 
 // 4. 防点击劫持
 app.use(SecurityConfig.frameguard);
-
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
+});
 // 5. 全局限流
 // app.use(SecurityConfig.globalLimiter);
 // ✅ 1. 全局通用限流（放在最前面，所有路由都会受限制）先用这个
@@ -135,15 +141,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 //     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 //   })
 // );
-// 全局日志中间件
-// 在 app 初始化后、路由之前添加
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    env: process.env.NODE_ENV,
-  });
-});
 /**
  * 根路由
  * 处理所有对 '/' 的请求
