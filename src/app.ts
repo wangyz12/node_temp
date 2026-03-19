@@ -46,7 +46,18 @@ console.log(`🌍 当前环境: ${process.env.NODE_ENV || 'development'}`);
 console.log(`🚪 端口: ${process.env.PORT || 3000}`);
 // 创建 Express 应用实例
 const app: Express = express();
-
+app.get('/api/init', async (req, res) => {
+  if (req.query.secret !== 'wang1993') {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  try {
+    // 调用你的初始化函数
+    await initDatabase();
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 app.use(loggerMiddleware);
 // 1. 隐藏服务器信息
 app.use(SecurityConfig.hideServerInfo);
@@ -67,18 +78,7 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
   });
 });
-app.get('/api/init', async (req, res) => {
-  if (req.query.secret !== 'wang1993') {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-  try {
-    // 调用你的初始化函数
-    await initDatabase();
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+
 // 5. 全局限流
 // app.use(SecurityConfig.globalLimiter);
 // ✅ 1. 全局通用限流（放在最前面，所有路由都会受限制）先用这个
