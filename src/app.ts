@@ -94,12 +94,6 @@ app.use(SecurityConfig.xssMiddleware);
 app.use(SecurityConfig.sanitizeMiddleware);
 
 // ==================== 路由 ====================
-
-// 健康检查（不经过限流）
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
 /**
  * ============================================
  * 全局中间件配置
