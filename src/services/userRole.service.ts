@@ -45,22 +45,24 @@ export class UserRoleService {
    * 获取用户的角色列表
    */
   async getUserRoles(userId: string) {
-    const userRoles = await UserRoleModel.find({ userId }).populate({
-      path: 'roleId',
-      select: 'name label dataScope status',
-      transform: (doc) => {
-        if (doc) {
-          return {
-            id: doc._id.toString(),
-            name: doc.name,
-            label: doc.label,
-            dataScope: doc.dataScope,
-            status: doc.status
-          };
-        }
-        return doc;
-      }
-    }).lean();
+    const userRoles = await UserRoleModel.find({ userId })
+      .populate({
+        path: 'roleId',
+        select: 'name label dataScope status',
+        transform: (doc) => {
+          if (doc) {
+            return {
+              id: doc._id.toString(),
+              name: doc.name,
+              label: doc.label,
+              dataScope: doc.dataScope,
+              status: doc.status,
+            };
+          }
+          return doc;
+        },
+      })
+      .lean();
 
     return userRoles.map((ur) => ur.roleId).filter(Boolean);
   }
@@ -101,27 +103,25 @@ export class UserRoleService {
 
     // 获取所有相关菜单（包括父菜单）
     const allRelatedMenuIds = new Set(menuIds);
-    
+
     // 查找所有相关菜单的父菜单
     const allMenus = await MenuModel.find({ _id: { $in: menuIds } }).sort('sort');
-    
+
     // 收集所有父菜单ID
     const parentMenuIds = new Set<string>();
-    allMenus.forEach(menu => {
+    allMenus.forEach((menu) => {
       if (menu.pid) {
         parentMenuIds.add(menu.pid.toString());
       }
     });
-    
+
     // 获取父菜单
     if (parentMenuIds.size > 0) {
       const parentMenus = await MenuModel.find({ _id: { $in: Array.from(parentMenuIds) } });
-      parentMenus.forEach(menu => {
+      parentMenus.forEach((menu) => {
         allRelatedMenuIds.add(menu._id.toString());
       });
     }
-    
-    console.log('📋 所有相关菜单ID（包括父菜单）:', Array.from(allRelatedMenuIds));
 
     // 获取所有相关菜单详情
     const allRelatedMenus = await MenuModel.find({ _id: { $in: Array.from(allRelatedMenuIds) } }).sort('sort');
@@ -145,7 +145,7 @@ export class UserRoleService {
 
     const menuTree = buildMenuTree();
     console.log('🌳 构建的菜单树:', JSON.stringify(menuTree, null, 2));
-    
+
     return menuTree;
   }
 
@@ -185,7 +185,7 @@ export class UserRoleService {
     // 获取用户的角色
     const userRoles = await UserRoleModel.find({ userId }).populate({
       path: 'roleId',
-      select: 'dataScope'
+      select: 'dataScope',
     });
     const roles = userRoles.map((ur) => ur.roleId);
 
@@ -259,20 +259,22 @@ export class UserRoleService {
    * 获取用户详情（包含角色信息）
    */
   async getUserWithRoles(userId: string) {
-    const user = await UserModel.findById(userId).populate({
-      path: 'deptId',
-      select: 'name code',
-      transform: (doc) => {
-        if (doc) {
-          return {
-            id: doc._id.toString(),
-            name: doc.name,
-            code: doc.code
-          };
-        }
-        return doc;
-      }
-    }).select('-password');
+    const user = await UserModel.findById(userId)
+      .populate({
+        path: 'deptId',
+        select: 'name code',
+        transform: (doc) => {
+          if (doc) {
+            return {
+              id: doc._id.toString(),
+              name: doc.name,
+              code: doc.code,
+            };
+          }
+          return doc;
+        },
+      })
+      .select('-password');
 
     if (!user) {
       throw new Error('用户不存在');
