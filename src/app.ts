@@ -1,15 +1,7 @@
-/**
- * Express 应用主配置文件
- *
- * 这个文件负责:
- * - 配置 Express 应用中间件
- * - 注册路由
- * - 设置错误处理
- */
-// import dotenv from 'dotenv';
+// src/app.ts
+import express, { Express, NextFunction, Request, Response } from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import express, { Express, NextFunction, Request, Response } from 'express';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -18,37 +10,24 @@ import { startCaptchaCleaner } from '@/utils/captcha.ts';
 import { RateLimiterUtil } from '@/utils/rateLimiter.ts';
 
 import { env } from './config/env.ts';
-import { SecurityConfig } from './config/security.ts'; // 安全相关 Xss 等
-// 导入路由模块
+import { SecurityConfig } from './config/security.ts';
 import router from './routes/index.ts';
-
 import './utils/global.ts';
 
-/**
- * 兼容 ESM 环境下的 __dirname 变量
- *
- * 在 ES Module 中，__dirname 和 __filename 不是全局变量，
- * 需要通过 import.meta.url 手动构造
- */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-// // 加载环境变量 - 必须在最前面
-// dotenv.config({
-//   path: path.resolve(__dirname, '../.env'), // 从项目根目录加载
-// });
-// 每30 分钟清理一次验证码缓存
-const captchaCleaner = startCaptchaCleaner(30);
-// 验证关键环境变量是否加载
+
+startCaptchaCleaner(30);
+
 if (!process.env.PORT) {
   console.warn('⚠️ PORT 环境变量未设置，将使用默认值 3000');
 }
 console.log(`🌍 当前环境: ${process.env.NODE_ENV || 'development'}`);
 console.log(`🚪 端口: ${process.env.PORT || 3000}`);
-// 创建 Express 应用实例
+
 const app: Express = express();
 
-app.use(loggerMiddleware);
-app.use(cors());
+// ==================== 1. 健康检查（必须最前面） ====================
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'OK',
@@ -57,120 +36,47 @@ app.get('/health', (req, res) => {
   });
 });
 
-// 1. 隐藏服务器信息
+// ==================== 2. 基础中间件 ====================
+app.use(loggerMiddleware);
+app.use(cors());
+
+// ==================== 3. 安全中间件 ====================
 app.use(SecurityConfig.hideServerInfo);
-
-// 3. Helmet 安全头
 app.use(SecurityConfig.helmetConfig);
-
-// 4. 防点击劫持
 app.use(SecurityConfig.frameguard);
 
-// 5. 全局限流
-// app.use(SecurityConfig.globalLimiter);
-// ✅ 1. 全局通用限流（放在最前面，所有路由都会受限制）先用这个
+// ==================== 4. 限流 ====================
 app.use(RateLimiterUtil.general);
-// 6. 解析请求体（必须在过滤之前）
+
+// ==================== 5. 请求体解析（只保留一份）====================
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// 7. XSS过滤
+// ==================== 6. 安全过滤 ====================
 app.use(SecurityConfig.xssMiddleware);
-
-// 8. NoSQL注入过滤
 app.use(SecurityConfig.sanitizeMiddleware);
-
-// ==================== 路由 ====================
-/**
- * ============================================
- * 全局中间件配置
- * ============================================
- */
-/**
- * JSON 请求体解析中间件
- * 用于解析 Content-Type 为 application/json 的请求
- * 解析后的数据会挂载到 req.body 上
- */
-app.use(express.json());
-
-/**
- * URL-encoded 请求体解析中间件
- * 用于解析传统的表单提交请求
- * extended: false 表示使用 querystring 库解析（简单键值对）
- */
-app.use(express.urlencoded({ extended: true }));
-
-/**
- * Cookie 解析中间件
- * 解析请求中的 Cookie 头，结果挂载到 req.cookies 上
- */
 app.use(cookieParser());
 
-/**
- * 静态文件服务中间件
- * 将 public 目录下的文件作为静态资源提供
- * 例如：public/images/logo.jpg 可通过 /images/logo.jpg 访问
- */
+// ==================== 7. 静态文件 ====================
 app.use(express.static(path.join(__dirname, 'public')));
 
-/**
- * ============================================
- * 路由注册
- * ============================================
- */
+// ==================== 8. API 路由 ====================
+// 添加调试日志，确认路由是否正确挂载
+console.log('✅ 路由注册开始...');
+console.log('API_PREFIX:', env.API_PREFIX);
+app.use(env.API_PREFIX, router);
+console.log('✅ 路由注册完成');
 
-// app.use(
-//   cors({
-//     // 1. 允许的前端源（你的前端运行地址，如 Vue 项目默认 5173）
-//     origin: [
-//       'http://localhost:5173', // Vue3 + Vite 默认端口
-//       'http://localhost:8080', // Vue2 / Webpack 默认端口
-//       'http://127.0.0.1:5173', // 兼容 IP 访问
-//     ],
-//     // 2. 允许携带 Cookie/Token（前端请求需配 withCredentials: true）
-//     credentials: true,
-//     // 3. 允许的 HTTP 方法
-//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-//     // 4. 允许的请求头（需包含前端自定义头，如 Authorization）
-//     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-//   })
-// );
-/**
- * 根路由
- * 处理所有对 '/' 的请求
- */
-app.use(`/api`, router);
-// ========== 404 ==========
+// ==================== 9. 404 处理 ====================
 app.use('*', (req, res) => {
-  logger.warn(`404 ${req.method} ${req.originalUrl}`);
-  res.status(404).json({ code: 1000, message: '接口不存在' });
+  console.log(`404: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({ code: 404, message: '接口不存在' });
 });
 
-// ========== 错误处理 ==========
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  logger.error('服务器错误', err);
-  res.status(500).json({ code: 1000, message: '服务器内部错误' });
-});
-/**
- * ============================================
- * 全局错误处理中间件
- * ============================================
- *
- * 错误处理中间件有4个参数: err, req, res, next
- * 必须放在所有路由之后
- * 当调用 next(err) 时，会跳转到此中间件
- */
+// ==================== 10. 错误处理 ====================
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  // 打印错误堆栈（开发环境有用）
-  console.error('错误详情:', err.stack);
-
-  // 返回统一的错误响应格式
-  res.status(500).json({
-    code: 1000,
-    message: '服务器内部错误',
-    // 生产环境不建议返回详细错误信息
-    // error: process.env.NODE_ENV === 'development' ? err.message : undefined
-  });
+  console.error('❌ 服务器错误:', err.stack);
+  res.status(500).json({ code: 500, message: '服务器内部错误' });
 });
-// 导出配置好的 Express 应用实例
+
 export default app;
