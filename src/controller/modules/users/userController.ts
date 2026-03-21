@@ -11,8 +11,8 @@ import { generateUserToken, generateUserTokenFromExisting } from '@/utils/userTo
 // 创建服务实例
 const userService = new UserService();
 
-// 允许修改的字段常量（移除了 department 和 employeeId，因为它们已在部门表中）
-const ALLOWED_UPDATE_FIELDS = ['username', 'avatar', 'phone', 'email'];
+// 允许修改的字段常量（管理员可以修改的字段）
+const ALLOWED_UPDATE_FIELDS = ['username', 'avatar', 'phone', 'email', 'deptId', 'status'];
 
 // 唯一字段检查配置（只保留 phone 和 email）
 const UNIQUE_FIELDS = [
@@ -91,8 +91,8 @@ const register = async (req: ExpressRequest, res: ExpressResponse) => {
     // 生成token
     const tokenData = await generateUserToken(user);
 
-    res.status(201).json({
-      code: 201,
+    res.status(200).json({
+      code: 200,
       msg: '用户创建成功',
       data: tokenData,
     });
@@ -157,12 +157,12 @@ const login = async (req: ExpressRequest, res: ExpressResponse) => {
     }
 
     console.log('找到用户:', user.account, '密码长度:', user.password?.length);
-    
+
     // 3. 验证密码
     console.log('验证密码，输入密码长度:', password?.length);
     const isPasswordValid = await user.comparePassword(password);
     console.log('密码验证结果:', isPasswordValid);
-    
+
     if (!isPasswordValid) {
       console.log('密码验证失败');
       return res.status(401).json({
@@ -443,8 +443,8 @@ export const createUser = [
 
       const user = await UserModel.create(userData);
 
-      res.status(201).json({
-        code: 201,
+      res.status(200).json({
+        code: 200,
         msg: '创建成功',
         data: user,
       });

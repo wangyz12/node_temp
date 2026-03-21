@@ -145,8 +145,8 @@ export class NewRoleController {
         delFlag: '0',
       });
 
-      res.status(201).json({
-        code: 201,
+      res.status(200).json({
+        code: 200,
         msg: '创建成功',
         data: {
           id: role._id.toString(),

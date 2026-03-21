@@ -6,7 +6,7 @@ async function query(req: ExpressRequest, res: ExpressResponse, next: ExpressNex
     // 直接从请求体创建用户
     const user = await testModel.create(req.body);
     logger.success('用户创建成功', { id: user._id, email: user.email });
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: '用户创建成功',
       data: {

@@ -18,15 +18,12 @@ export class RoleController {
 
       // 构建查询条件 - 使用更简单的逻辑
       const conditions: any = {};
-      
+
       // 只查询未删除的角色
       conditions.delFlag = { $ne: '1' };
 
       if (keyword) {
-        conditions.$or = [
-          { name: new RegExp(keyword as string, 'i') },
-          { label: new RegExp(keyword as string, 'i') }
-        ];
+        conditions.$or = [{ name: new RegExp(keyword as string, 'i') }, { label: new RegExp(keyword as string, 'i') }];
       }
 
       if (status !== undefined && status !== '') {
@@ -40,7 +37,7 @@ export class RoleController {
       const roles = await RoleModel.find(conditions).sort({ createdAt: -1 }).skip(skip).limit(Number(limit));
 
       // 格式化角色数据，将 _id 转换为 id
-      const formattedRoles = roles.map(role => ({
+      const formattedRoles = roles.map((role) => ({
         id: role._id.toString(),
         name: role.name,
         label: role.label,
@@ -48,7 +45,7 @@ export class RoleController {
         status: role.status,
         remark: role.remark || '',
         createdAt: role.createdAt,
-        updatedAt: role.updatedAt
+        updatedAt: role.updatedAt,
       }));
 
       res.json({
@@ -146,8 +143,8 @@ export class RoleController {
         await RoleDeptModel.insertMany(roleDeptDocs);
       }
 
-      res.status(201).json({
-        code: 201,
+      res.status(200).json({
+        code: 200,
         msg: '创建成功',
         data: role,
       });
@@ -167,7 +164,7 @@ export class RoleController {
     try {
       const { id } = req.params;
       const { name, label, dataScope, status, remark, menuIds, deptIds } = req.body;
-      
+
       // 类型断言，确保id是字符串
       const roleId = id as string;
 
@@ -274,16 +271,18 @@ export class RoleController {
    */
   async getAllRoles(req: ExpressRequest, res: ExpressResponse) {
     try {
-      const roles = await RoleModel.find({ 
+      const roles = await RoleModel.find({
         delFlag: { $ne: '1' },
-        status: '0' 
-      }).select('_id name label').sort({ createdAt: 1 });
+        status: '0',
+      })
+        .select('_id name label')
+        .sort({ createdAt: 1 });
 
       // 格式化响应数据，将 _id 转换为 id
-      const formattedRoles = roles.map(role => ({
+      const formattedRoles = roles.map((role) => ({
         id: role._id.toString(),
         name: role.name,
-        label: role.label
+        label: role.label,
       }));
 
       res.json({
@@ -447,7 +446,7 @@ export class RoleController {
     try {
       const { roleId } = req.params;
       const { menuIds } = req.body;
-      
+
       // 类型断言
       const roleIdStr = roleId as string;
 
@@ -486,7 +485,7 @@ export class RoleController {
     try {
       const { roleId } = req.params;
       const { deptIds } = req.body;
-      
+
       // 类型断言
       const roleIdStr = roleId as string;
 

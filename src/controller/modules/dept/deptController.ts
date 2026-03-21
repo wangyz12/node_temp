@@ -26,7 +26,7 @@ export class DeptController {
       const allDepts = await DeptModel.find(conditions).sort({ orderNum: 1 });
       console.log('部门树查询条件:', conditions);
       console.log('查询到的部门数量:', allDepts.length);
-      allDepts.forEach(dept => {
+      allDepts.forEach((dept) => {
         console.log(`- ${dept.name}: id=${dept._id}, parentId=${dept.parentId}, status=${dept.status}, delFlag=${dept.delFlag}`);
       });
 
@@ -36,9 +36,9 @@ export class DeptController {
           if (parentId === null) return !dept.parentId;
           return dept.parentId?.toString() === parentId;
         });
-        
+
         console.log(`构建部门树: parentId=${parentId}, 找到 ${filtered.length} 个部门`);
-        
+
         return filtered.map((dept) => {
           const children: any[] = buildDeptTree(dept._id.toString());
           return {
@@ -123,8 +123,8 @@ export class DeptController {
         status: status || '0',
       });
 
-      res.status(201).json({
-        code: 201,
+      res.status(200).json({
+        code: 200,
         msg: '创建成功',
         data: dept,
       });
@@ -144,7 +144,7 @@ export class DeptController {
     try {
       const { id } = req.params;
       const { name, code, parentId, orderNum, leader, phone, email, status } = req.body;
-      
+
       // 类型断言，确保id和parentId是字符串
       const deptId = id as string;
       const parentIdStr = parentId as string;
