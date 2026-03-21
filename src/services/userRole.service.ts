@@ -92,20 +92,44 @@ export class UserRoleService {
     // 获取角色关联的菜单ID
     const roleMenus = await RoleMenuModel.find({ roleId: { $in: roleIds } });
     const menuIds = [...new Set(roleMenus.map((rm) => rm.menuId.toString()))];
-    console.log('📋 角色关联的菜单ID:', menuIds);
+    console.log('📋 角色直接关联的菜单ID:', menuIds);
 
     if (menuIds.length === 0) {
       console.log('⚠️ 角色没有分配任何菜单');
       return [];
     }
 
-    // 获取菜单详情并构建树形结构
+    // 获取所有相关菜单（包括父菜单）
+    const allRelatedMenuIds = new Set(menuIds);
+    
+    // 查找所有相关菜单的父菜单
     const allMenus = await MenuModel.find({ _id: { $in: menuIds } }).sort('sort');
-    console.log('📊 获取到的菜单数量:', allMenus.length);
+    
+    // 收集所有父菜单ID
+    const parentMenuIds = new Set<string>();
+    allMenus.forEach(menu => {
+      if (menu.pid) {
+        parentMenuIds.add(menu.pid.toString());
+      }
+    });
+    
+    // 获取父菜单
+    if (parentMenuIds.size > 0) {
+      const parentMenus = await MenuModel.find({ _id: { $in: Array.from(parentMenuIds) } });
+      parentMenus.forEach(menu => {
+        allRelatedMenuIds.add(menu._id.toString());
+      });
+    }
+    
+    console.log('📋 所有相关菜单ID（包括父菜单）:', Array.from(allRelatedMenuIds));
+
+    // 获取所有相关菜单详情
+    const allRelatedMenus = await MenuModel.find({ _id: { $in: Array.from(allRelatedMenuIds) } }).sort('sort');
+    console.log('📊 获取到的菜单数量:', allRelatedMenus.length);
 
     // 构建菜单树
     const buildMenuTree = (parentId: string | null = null): any[] => {
-      return allMenus
+      return allRelatedMenus
         .filter((menu) => {
           if (parentId === null) return !menu.pid;
           return menu.pid?.toString() === parentId;
