@@ -46,7 +46,7 @@ async function bootstrap() {
     logger.success('数据库连接成功');
 
     // 2. 启动服务器
-    server.listen(port);
+    server.listen(port, '0.0.0.0');
     server.on('error', onError);
     server.on('listening', onListening);
 
