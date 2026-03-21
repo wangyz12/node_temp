@@ -13,18 +13,26 @@ export class UserRoleController {
     try {
       const { userId, roleIds } = req.body;
 
+      console.log('📡 分配用户角色请求:', { userId, roleIds, body: req.body });
+
       if (!userId || !Array.isArray(roleIds)) {
+        console.log('❌ 参数错误:', { userId, roleIds });
         return res.status(400).json({ code: 400, msg: '参数错误' });
       }
 
       // 检查用户是否存在
       const user = await UserModel.findById(userId);
       if (!user) {
+        console.log('❌ 用户不存在:', userId);
         return res.status(404).json({ code: 404, msg: '用户不存在' });
       }
 
+      console.log('✅ 找到用户:', user.account);
+
       // 分配角色
       await userRoleService.assignRolesToUser(userId, roleIds);
+
+      console.log('✅ 角色分配成功');
 
       res.json({
         code: 200,

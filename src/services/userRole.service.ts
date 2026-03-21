@@ -77,24 +77,31 @@ export class UserRoleService {
    * 获取用户的菜单权限（基于角色）
    */
   async getUserMenus(userId: string) {
+    console.log('📡 获取用户菜单权限，用户ID:', userId);
+
     // 获取用户的角色ID
     const userRoles = await UserRoleModel.find({ userId });
     const roleIds = userRoles.map((ur) => ur.roleId);
+    console.log('👥 用户角色ID:', roleIds);
 
     if (roleIds.length === 0) {
+      console.log('⚠️ 用户没有分配任何角色');
       return [];
     }
 
     // 获取角色关联的菜单ID
     const roleMenus = await RoleMenuModel.find({ roleId: { $in: roleIds } });
     const menuIds = [...new Set(roleMenus.map((rm) => rm.menuId.toString()))];
+    console.log('📋 角色关联的菜单ID:', menuIds);
 
     if (menuIds.length === 0) {
+      console.log('⚠️ 角色没有分配任何菜单');
       return [];
     }
 
     // 获取菜单详情并构建树形结构
     const allMenus = await MenuModel.find({ _id: { $in: menuIds } }).sort('sort');
+    console.log('📊 获取到的菜单数量:', allMenus.length);
 
     // 构建菜单树
     const buildMenuTree = (parentId: string | null = null): any[] => {
@@ -112,7 +119,10 @@ export class UserRoleService {
         });
     };
 
-    return buildMenuTree();
+    const menuTree = buildMenuTree();
+    console.log('🌳 构建的菜单树:', JSON.stringify(menuTree, null, 2));
+    
+    return menuTree;
   }
 
   /**

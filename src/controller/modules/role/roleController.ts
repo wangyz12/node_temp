@@ -403,9 +403,12 @@ export class RoleController {
   async getRoleMenus(req: ExpressRequest, res: ExpressResponse) {
     try {
       const { roleId } = req.params;
+      console.log('📡 获取角色已有菜单，角色ID:', roleId);
 
       const roleMenus = await RoleMenuModel.find({ roleId });
       const menuIds = roleMenus.map((rm) => rm.menuId.toString());
+      
+      console.log('✅ 角色已有菜单ID:', menuIds);
 
       res.json({
         code: 200,
@@ -424,9 +427,12 @@ export class RoleController {
   async getRoleDepts(req: ExpressRequest, res: ExpressResponse) {
     try {
       const { roleId } = req.params;
+      console.log('📡 获取角色已有部门，角色ID:', roleId);
 
       const roleDepts = await RoleDeptModel.find({ roleId });
       const deptIds = roleDepts.map((rd) => rd.deptId.toString());
+      
+      console.log('✅ 角色已有部门ID:', deptIds);
 
       res.json({
         code: 200,
@@ -447,6 +453,8 @@ export class RoleController {
       const { roleId } = req.params;
       const { menuIds } = req.body;
 
+      console.log('📡 分配角色菜单请求:', { roleId, menuIds, body: req.body });
+
       // 类型断言
       const roleIdStr = roleId as string;
 
@@ -456,16 +464,23 @@ export class RoleController {
         return res.status(404).json({ code: 404, msg: '角色不存在' });
       }
 
+      console.log('✅ 找到角色:', role.name);
+
       // 删除旧的菜单权限
       await RoleMenuModel.deleteMany({ roleId: roleIdStr });
+      console.log('🗑️ 删除旧菜单权限完成');
 
       // 添加新的菜单权限
       if (menuIds && Array.isArray(menuIds) && menuIds.length > 0) {
+        console.log('📝 添加新菜单权限:', menuIds);
         const roleMenuDocs = menuIds.map((menuId) => ({
           roleId: new Types.ObjectId(roleIdStr),
           menuId: new Types.ObjectId(menuId),
         }));
         await RoleMenuModel.insertMany(roleMenuDocs);
+        console.log('✅ 菜单权限分配完成');
+      } else {
+        console.log('⚠️ 没有菜单ID需要分配');
       }
 
       res.json({
