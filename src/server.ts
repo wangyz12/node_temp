@@ -12,9 +12,9 @@ import debugLib from 'debug';
 import http from 'http';
 
 import { env } from './config/env.ts';
-import { connectMongoDB } from './config/mongodb.ts';
-import { initDatabase } from './scripts/initDatabase.ts';
+import { connectMongoDB, mongoDB } from './config/mongodb.ts';
 import app from './app.ts';
+
 // 初始化调试模块，命名空间为 'my-backend-admin:server'
 const debug = debugLib('my-backend-admin:server');
 
@@ -36,14 +36,14 @@ const server = http.createServer(app);
  * 启动服务器
  * 先连接数据库，再启动服务器
  */
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   try {
     // 1. 先连接 MongoDB
     console.log(chalk.blue('🔄 正在连接 MongoDB...'));
-    logger.info('正在连接数据库...');
+    global.logger.info('正在连接数据库...');
     await connectMongoDB();
     console.log(chalk.green('✅ MongoDB 连接成功'));
-    logger.success('数据库连接成功');
+    global.logger.success('数据库连接成功');
 
     // 2. 启动服务器
     server.listen(port, '0.0.0.0');
@@ -54,7 +54,7 @@ async function bootstrap() {
     setupGracefulShutdown();
   } catch (error) {
     console.error(chalk.red('❌ 服务器启动失败:'), error);
-    logger.error('启动失败', error);
+    global.logger.error('启动失败', error);
     process.exit(1);
   }
 }
@@ -63,79 +63,101 @@ async function bootstrap() {
  * 设置优雅关闭
  * 当收到终止信号时，先关闭数据库连接，再退出进程
  */
-function setupGracefulShutdown() {
-  // 处理 Ctrl+C
-  process.on('SIGINT', gracefulShutdown);
+function setupGracefulShutdown(): void {
+  const signals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM'];
 
-  // 处理终止信号
-  process.on('SIGTERM', gracefulShutdown);
+  signals.forEach((signal) => {
+    process.on(signal, () => gracefulShutdown(signal));
+  });
 
   // 处理 nodemon 重启
-  process.on('SIGUSR2', gracefulShutdown);
+  process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2'));
 }
 
 /**
  * 优雅关闭函数
+ * @param signal - 接收到的信号
  */
-async function gracefulShutdown(signal?: string) {
+async function gracefulShutdown(signal?: string): Promise<void> {
   console.log(chalk.yellow(`\n⚠️ 收到 ${signal || '终止'} 信号，正在优雅关闭...`));
+  global.logger.warn(`收到 ${signal || '终止'} 信号，开始优雅关闭`);
 
-  // 先停止接收新连接
-  server.close(async () => {
-    console.log(chalk.yellow('⚠️ HTTP 服务器已关闭'));
-
-    try {
-      // 关闭数据库连接
-      const { mongoDB } = await import('./config/mongodb.js');
-      await mongoDB.disconnect();
-      console.log(chalk.green('✅ 所有连接已关闭'));
-
-      process.exit(0);
-    } catch (error) {
-      console.error(chalk.red('❌ 关闭连接时出错:'), error);
-      process.exit(1);
-    }
-  });
-
-  // 设置超时，如果 10 秒内没有完成关闭，强制退出
-  setTimeout(() => {
-    console.error(chalk.red('❌ 优雅关闭超时，强制退出'));
+  // 设置超时强制退出
+  const forceExitTimeout = setTimeout(() => {
+    console.error(chalk.red('❌ 优雅关闭超时（10秒），强制退出'));
+    global.logger.error('优雅关闭超时，强制退出');
     process.exit(1);
   }, 10000);
+
+  try {
+    // 停止接收新请求，等待现有请求完成
+    await new Promise<void>((resolve, reject) => {
+      server.close((err) => {
+        if (err) {
+          reject(err);
+        } else {
+          console.log(chalk.yellow('⚠️ HTTP 服务器已关闭'));
+          global.logger.info('HTTP 服务器已关闭');
+          resolve();
+        }
+      });
+    });
+
+    // 关闭数据库连接
+    if (mongoDB && typeof mongoDB.disconnect === 'function') {
+      console.log(chalk.yellow('⚠️ 正在关闭数据库连接...'));
+      global.logger.info('正在关闭数据库连接...');
+      await mongoDB.disconnect();
+      console.log(chalk.green('✅ 数据库连接已关闭'));
+      global.logger.info('数据库连接已关闭');
+    }
+
+    console.log(chalk.green('✅ 优雅关闭完成'));
+    global.logger.info('优雅关闭完成');
+    clearTimeout(forceExitTimeout);
+    process.exit(0);
+  } catch (error) {
+    console.error(chalk.red('❌ 优雅关闭失败:'), error);
+    global.logger.error('优雅关闭失败', error);
+    clearTimeout(forceExitTimeout);
+    process.exit(1);
+  }
 }
 
 /**
  * HTTP 服务器错误事件处理函数
- *
  * @param error - 错误对象
- * @throws 如果不是监听相关的错误，直接抛出
  */
 function onError(error: NodeJS.ErrnoException): void {
   // 如果不是监听相关的错误，直接抛出
   if (error.syscall !== 'listen') {
+    global.logger.error('服务器非监听错误', error);
     throw error;
   }
 
   // 获取绑定信息（用于错误提示）
   const bind =
     typeof port === 'string'
-      ? 'Pipe ' + port // 命名管道
-      : 'Port ' + port; // 端口号
+      ? `Pipe ${port}` // 命名管道
+      : `Port ${port}`; // 端口号
 
   // 处理特定的监听错误
   switch (error.code) {
     case 'EACCES':
       // 权限不足（通常是因为使用小于1024的端口需要管理员权限）
       console.error(chalk.red(`❌ ${bind} 需要更高的权限`));
+      global.logger.error(`${bind} 权限不足`, { code: error.code });
       process.exit(1);
       break;
     case 'EADDRINUSE':
       // 端口已被占用
       console.error(chalk.red(`❌ ${bind} 已被占用`));
+      global.logger.error(`${bind} 端口被占用`, { code: error.code });
       process.exit(1);
       break;
     default:
       // 其他未预料的错误
+      global.logger.error('服务器监听错误', error);
       throw error;
   }
 }
@@ -148,28 +170,52 @@ function onListening(): void {
   // 获取服务器地址信息
   const addr = server.address();
 
+  if (!addr) {
+    global.logger.error('无法获取服务器地址信息');
+    return;
+  }
+
   // 格式化地址信息用于显示
   const bind =
     typeof addr === 'string'
-      ? 'pipe ' + addr // 命名管道
-      : 'port ' + addr?.port; // 端口号
+      ? `pipe ${addr}` // 命名管道
+      : `port ${addr.port}`; // 端口号
 
   // 输出调试信息
-  debug('Listening on ' + bind);
-  // initDatabase(); // 注释掉，手动运行 npm run init-db 初始化数据库
+  debug(`Listening on ${bind}`);
+  global.logger.info(`服务器启动成功，监听 ${bind}`);
+
   // 使用更美观的控制台输出
   console.log(chalk.green('\n🎉 服务启动成功！'));
   console.log(chalk.cyan('━'.repeat(50)));
   console.log(chalk.white(`📡 服务地址: ${chalk.bold(`http://localhost:${env.PORT}`)}`));
-  console.log(chalk.white(`🌍 运行环境: ${chalk.bold(env.NODE_ENV)}`));
-  console.log(chalk.white(`🗄️  数据库: ${chalk.bold('MongoDB')} - ${env.MONGODB.DB_NAME}`));
-  console.log(chalk.white(`🔗 API前缀: ${chalk.bold(env.API_PREFIX)}`));
+  console.log(chalk.white(`🌍 运行环境: ${chalk.bold(env.NODE_ENV || 'development')}`));
+  console.log(chalk.white(`🗄️  数据库: ${chalk.bold('MongoDB')} - ${env.MONGODB?.DB_NAME || 'unknown'}`));
+  console.log(chalk.white(`🔗 API前缀: ${chalk.bold(env.API_PREFIX || '/api')}`));
   console.log(chalk.cyan('━'.repeat(50)));
   console.log(chalk.gray('按 Ctrl+C 停止服务\n'));
 }
 
+// 捕获未处理的 Promise 拒绝
+process.on('unhandledRejection', (reason: unknown, promise: Promise<unknown>) => {
+  console.error(chalk.red('❌ 未处理的 Promise 拒绝:'), reason);
+  global.logger.error('未处理的 Promise 拒绝', { reason, promise });
+  // 不退出进程，只记录错误
+});
+
+// 捕获未捕获的异常
+process.on('uncaughtException', (error: Error) => {
+  console.error(chalk.red('❌ 未捕获的异常:'), error);
+  global.logger.error('未捕获的异常', error);
+  // 严重错误，优雅退出
+  gracefulShutdown('uncaughtException').catch(() => {
+    process.exit(1);
+  });
+});
+
 // 启动服务器
 bootstrap().catch((error) => {
   console.error(chalk.red('❌ 启动过程出错:'), error);
+  global.logger.error('启动过程出错', error);
   process.exit(1);
 });
