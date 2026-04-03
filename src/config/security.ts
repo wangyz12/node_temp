@@ -5,7 +5,8 @@ import helmet from 'helmet';
 import xss from 'xss';
 
 // import cors from 'cors';
-import { env } from './env.ts';
+import { computedEnv as env } from './env.ts'
+import { OK, CREATED, NO_CONTENT, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, TOO_MANY_REQUESTS, INTERNAL_SERVER_ERROR, NOT_IMPLEMENTED, BAD_GATEWAY, SERVICE_UNAVAILABLE } from '@/constants/httpStatus';
 
 /**
  * 通用安全配置
@@ -53,7 +54,7 @@ export class SecurityConfig {
   //   windowMs: 15 * 60 * 1000, // 15分钟
   //   max: 100, // 每个IP最多100个请求
   //   message: {
-  //     code: 429,
+  //     code: TOO_MANY_REQUESTS,
   //     msg: '请求过于频繁，请稍后再试',
   //   },
   //   standardHeaders: true,
@@ -68,7 +69,7 @@ export class SecurityConfig {
   //   windowMs: 15 * 60 * 1000,
   //   max: 5,
   //   message: {
-  //     code: 429,
+  //     code: TOO_MANY_REQUESTS,
   //     msg: '登录尝试次数过多，请15分钟后再试',
   //   },
   //   skipSuccessfulRequests: true,
@@ -81,7 +82,7 @@ export class SecurityConfig {
   //   windowMs: 60 * 60 * 1000,
   //   max: 3,
   //   message: {
-  //     code: 429,
+  //     code: TOO_MANY_REQUESTS,
   //     msg: '注册过于频繁，请1小时后再试',
   //   },
   // });

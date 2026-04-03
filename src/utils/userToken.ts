@@ -1,5 +1,6 @@
 import { UserModel } from '@/models/index.ts';
 import { IUser } from '@/models/users/users.ts';
+import { DEFAULT_ROLE } from '@/constants/roles.ts';
 import { jwtUtil } from './jwt.ts';
 
 /**
@@ -9,7 +10,7 @@ import { jwtUtil } from './jwt.ts';
  */
 export const generateUserToken = async (user: IUser) => {
   // 从 user 中获取 userRole（roles 数组的第一个）
-  const userRole = user.roles && Array.isArray(user.roles) && user.roles.length > 0 ? user.roles[0] : 'employee';
+  const userRole = user.roles && Array.isArray(user.roles) && user.roles.length > 0 ? user.roles[0] : DEFAULT_ROLE;
 
   // 1. 生成 token - 👈 加上 role
   const tokens = jwtUtil.generateTokens({
@@ -35,7 +36,7 @@ export const generateUserToken = async (user: IUser) => {
  */
 export const generateUserTokenFromExisting = (user: IUser) => {
   // 从 user 中获取 userRole（roles 数组的第一个）
-  const userRole = user.roles && Array.isArray(user.roles) && user.roles.length > 0 ? user.roles[0] : 'employee';
+  const userRole = user.roles && Array.isArray(user.roles) && user.roles.length > 0 ? user.roles[0] : DEFAULT_ROLE;
 
   // 1. 生成 token - 👈 加上 role
   const tokens = jwtUtil.generateTokens({

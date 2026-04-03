@@ -1,273 +1,260 @@
 // src/controller/modules/userRole/userRoleController.ts
-import { RoleModel } from '@/models/role/role.ts';
-import { UserModel } from '@/models/users/users.ts';
+/**
+ * 用户角色控制器
+ *
+ * 负责处理用户角色相关的HTTP请求，包括：
+ * - 为用户分配角色
+ * - 获取用户的角色列表
+ * - 移除用户的角色
+ * - 批量操作用户角色
+ *
+ * 控制器层只负责HTTP请求/响应处理，业务逻辑在Service层实现。
+ *
+ * @module UserRoleController
+ */
+
 import { UserRoleService } from '@/services/userRole.service.ts';
+import type { ExpressRequest, ExpressResponse } from '@/types/express';
+import { handleError, successResponse, checkAuth, checkRequiredParams, checkArrayParam } from '@/utils/errorHandler.ts';
 
 const userRoleService = new UserRoleService();
 
-export class UserRoleController {
-  /**
-   * 为用户分配角色
-   */
-  async assignUserRoles(req: ExpressRequest, res: ExpressResponse) {
-    try {
-      const { userId, roleIds } = req.body;
+// ==================== 控制器方法 ====================
 
-      console.log('📡 分配用户角色请求:', { userId, roleIds, body: req.body });
+/**
+ * 为用户分配角色
+ * @route POST /api/user-role/assign
+ * @header Authorization Bearer {token}
+ * @param {string} userId - 用户ID
+ * @param {string[]} roleIds - 角色ID数组
+ * @returns {object} 操作结果
+ */
+const assignUserRoles = async (req: ExpressRequest, res: ExpressResponse) => {
+  try {
+    const { userId, roleIds } = req.body;
+    checkRequiredParams({ userId, roleIds }, ['userId', 'roleIds']);
+    checkArrayParam(roleIds, 'roleIds');
 
-      if (!userId || !Array.isArray(roleIds)) {
-        console.log('❌ 参数错误:', { userId, roleIds });
-        return res.status(400).json({ code: 400, msg: '参数错误' });
-      }
-
-      // 检查用户是否存在
-      const user = await UserModel.findById(userId);
-      if (!user) {
-        console.log('❌ 用户不存在:', userId);
-        return res.status(404).json({ code: 404, msg: '用户不存在' });
-      }
-
-      console.log('✅ 找到用户:', user.account);
-
-      // 分配角色
-      await userRoleService.assignRolesToUser(userId, roleIds);
-
-      console.log('✅ 角色分配成功');
-
-      res.json({
-        code: 200,
-        msg: '角色分配成功',
-      });
-    } catch (error: any) {
-      if (error.message === '用户不存在' || error.message === '部分角色不存在或已停用') {
-        return res.status(400).json({ code: 400, msg: error.message });
-      }
-      console.error('分配用户角色失败:', error);
-      res.status(500).json({ code: 500, msg: '服务器错误' });
-    }
+    await userRoleService.assignRolesToUser(userId, roleIds);
+    successResponse(res, null, '角色分配成功');
+  } catch (error: any) {
+    handleError(error, res, '分配用户角色失败');
   }
+};
 
-  /**
-   * 获取用户的角色列表
-   */
-  async getUserRoles(req: ExpressRequest, res: ExpressResponse) {
-    try {
-      const { userId } = req.params;
-      
-      // 类型断言
-      const userIdStr = userId as string;
+/**
+ * 获取用户的角色列表
+ * @route GET /api/user-role/user/:userId
+ * @header Authorization Bearer {token}
+ * @param {string} userId - 用户ID
+ * @returns {object} 用户的角色列表
+ */
+const getUserRoles = async (req: ExpressRequest, res: ExpressResponse) => {
+  try {
+    const userId = req.params.userId;
+    checkRequiredParams({ userId }, ['userId']);
 
-      const roles = await userRoleService.getUserRoles(userIdStr);
-
-      res.json({
-        code: 200,
-        msg: 'success',
-        data: roles,
-      });
-    } catch (error) {
-      console.error('获取用户角色失败:', error);
-      res.status(500).json({ code: 500, msg: '服务器错误' });
-    }
+    const roles = await userRoleService.getUserRoles(userId as string);
+    successResponse(res, roles, '获取成功');
+  } catch (error: any) {
+    handleError(error, res, '获取用户角色失败');
   }
+};
 
-  /**
-   * 获取用户的菜单权限
-   */
-  async getUserMenus(req: ExpressRequest, res: ExpressResponse) {
-    try {
-      const userId = req.user?.userId;
-      if (!userId) {
-        return res.status(401).json({ code: 401, msg: '请先登录' });
-      }
+/**
+ * 移除用户的角色
+ * @route DELETE /api/user-role/remove
+ * @header Authorization Bearer {token}
+ * @param {string} userId - 用户ID
+ * @param {string} roleId - 角色ID
+ * @returns {object} 操作结果
+ */
+const removeUserRole = async (req: ExpressRequest, res: ExpressResponse) => {
+  try {
+    const { userId, roleId } = req.body;
+    checkRequiredParams({ userId, roleId }, ['userId', 'roleId']);
 
-      const menus = await userRoleService.getUserMenus(userId);
-
-      res.json({
-        code: 200,
-        msg: 'success',
-        data: menus,
-      });
-    } catch (error) {
-      console.error('获取用户菜单失败:', error);
-      res.status(500).json({ code: 500, msg: '服务器错误' });
-    }
+    await userRoleService.removeRoleFromUser(userId, roleId);
+    successResponse(res, null, '角色移除成功');
+  } catch (error: any) {
+    handleError(error, res, '移除用户角色失败');
   }
+};
 
-  /**
-   * 获取用户的权限标识列表
-   */
-  async getUserPermissions(req: ExpressRequest, res: ExpressResponse) {
-    try {
-      const userId = req.user?.userId;
-      if (!userId) {
-        return res.status(401).json({ code: 401, msg: '请先登录' });
-      }
+/**
+ * 批量操作用户角色
+ * @route POST /api/user-role/batch
+ * @header Authorization Bearer {token}
+ * @param {string} userId - 用户ID
+ * @param {string[]} addRoleIds - 要添加的角色ID数组（可选）
+ * @param {string[]} removeRoleIds - 要移除的角色ID数组（可选）
+ * @returns {object} 操作结果
+ */
+const batchUserRoleOperation = async (req: ExpressRequest, res: ExpressResponse) => {
+  try {
+    const { userId, addRoleIds = [], removeRoleIds = [] } = req.body;
+    checkRequiredParams({ userId }, ['userId']);
 
-      const permissions = await userRoleService.getUserPermissions(userId);
-
-      res.json({
-        code: 200,
-        msg: 'success',
-        data: permissions,
-      });
-    } catch (error) {
-      console.error('获取用户权限失败:', error);
-      res.status(500).json({ code: 500, msg: '服务器错误' });
+    if (addRoleIds.length > 0) {
+      checkArrayParam(addRoleIds, 'addRoleIds');
     }
-  }
 
-  /**
-   * 获取用户的数据权限
-   */
-  async getUserDataScope(req: ExpressRequest, res: ExpressResponse) {
-    try {
-      const userId = req.user?.userId;
-      if (!userId) {
-        return res.status(401).json({ code: 401, msg: '请先登录' });
-      }
-
-      const dataScope = await userRoleService.getUserDataScope(userId);
-
-      res.json({
-        code: 200,
-        msg: 'success',
-        data: dataScope,
-      });
-    } catch (error) {
-      console.error('获取用户数据权限失败:', error);
-      res.status(500).json({ code: 500, msg: '服务器错误' });
+    if (removeRoleIds.length > 0) {
+      checkArrayParam(removeRoleIds, 'removeRoleIds');
     }
+
+    await userRoleService.batchUserRoleOperation(userId, addRoleIds, removeRoleIds);
+    successResponse(res, null, '批量操作成功');
+  } catch (error: any) {
+    handleError(error, res, '批量操作用户角色失败');
   }
+};
 
-  /**
-   * 批量分配角色给用户
-   */
-  async batchAssignRoles(req: ExpressRequest, res: ExpressResponse) {
-    try {
-      const { userIds, roleIds } = req.body;
-
-      if (!Array.isArray(userIds) || !Array.isArray(roleIds)) {
-        return res.status(400).json({ code: 400, msg: '参数错误' });
-      }
-
-      const results = await userRoleService.batchUpdateUserRoles(userIds, roleIds);
-
-      res.json({
-        code: 200,
-        msg: '批量分配成功',
-        data: results,
-      });
-    } catch (error: any) {
-      if (error.message === '部分用户不存在' || error.message === '部分角色不存在或已停用') {
-        return res.status(400).json({ code: 400, msg: error.message });
-      }
-      console.error('批量分配角色失败:', error);
-      res.status(500).json({ code: 500, msg: '服务器错误' });
-    }
+/**
+ * 获取角色下的用户列表
+ * @route GET /api/user-role/role/:roleId
+ * @header Authorization Bearer {token}
+ * @param {string} roleId - 角色ID
+ * @query {number} page - 页码（默认1）
+ * @query {number} limit - 每页数量（默认10）
+ * @returns {object} 用户列表和分页信息
+ */
+const getRoleUsers = async (req: ExpressRequest, res: ExpressResponse) => {
+  try {
+    const roleId = req.params.roleId;
+    const { page = 1, limit = 10 } = req.query;
+    checkRequiredParams({ roleId }, ['roleId']);
+    const result = await userRoleService.getRoleUsers(roleId as string, { page, limit } as any);
+    successResponse(res, result, '获取成功');
+  } catch (error: any) {
+    handleError(error, res, '获取角色用户列表失败');
   }
+};
 
-  /**
-   * 获取用户详情（包含角色信息）
-   */
-  async getUserWithRoles(req: ExpressRequest, res: ExpressResponse) {
-    try {
-      const { userId } = req.params;
-      
-      // 类型断言
-      const userIdStr = userId as string;
+/**
+ * 检查用户是否拥有指定角色
+ * @route GET /api/user-role/check
+ * @header Authorization Bearer {token}
+ * @param {string} userId - 用户ID
+ * @param {string} roleId - 角色ID
+ * @returns {object} 检查结果
+ */
+const checkUserRole = async (req: ExpressRequest, res: ExpressResponse) => {
+  try {
+    const { userId, roleId } = req.query;
+    checkRequiredParams({ userId, roleId }, ['userId', 'roleId']);
 
-      const userWithRoles = await userRoleService.getUserWithRoles(userIdStr);
-
-      res.json({
-        code: 200,
-        msg: 'success',
-        data: userWithRoles,
-      });
-    } catch (error: any) {
-      if (error.message === '用户不存在') {
-        return res.status(404).json({ code: 404, msg: error.message });
-      }
-      console.error('获取用户详情失败:', error);
-      res.status(500).json({ code: 500, msg: '服务器错误' });
-    }
+    const hasRole = await userRoleService.checkUserHasRole(userId as string, roleId as string);
+    successResponse(res, { hasRole }, '检查成功');
+  } catch (error: any) {
+    handleError(error, res, '检查用户角色失败');
   }
+};
 
-  /**
-   * 检查用户是否有某个权限
-   */
-  async checkUserPermission(req: ExpressRequest, res: ExpressResponse) {
-    try {
-      const userId = req.user?.userId;
-      const { permission } = req.body;
+/**
+ * 批量分配角色（路由兼容性方法）
+ * @route POST /api/user-role/batch-assign
+ */
+const batchAssignRoles = async (req: ExpressRequest, res: ExpressResponse) => {
+  try {
+    const { userIds, roleIds } = req.body;
+    checkRequiredParams({ userIds, roleIds }, ['userIds', 'roleIds']);
+    checkArrayParam(userIds, 'userIds');
+    checkArrayParam(roleIds, 'roleIds');
 
-      if (!userId) {
-        return res.status(401).json({ code: 401, msg: '请先登录' });
-      }
-
-      if (!permission) {
-        return res.status(400).json({ code: 400, msg: '权限标识不能为空' });
-      }
-
-      const hasPermission = await userRoleService.hasPermission(userId, permission);
-
-      res.json({
-        code: 200,
-        msg: 'success',
-        data: { hasPermission },
-      });
-    } catch (error) {
-      console.error('检查用户权限失败:', error);
-      res.status(500).json({ code: 500, msg: '服务器错误' });
-    }
+    const results = await userRoleService.batchUpdateUserRoles(userIds, roleIds);
+    successResponse(res, results, '批量分配成功');
+  } catch (error: any) {
+    handleError(error, res, '批量分配角色失败');
   }
+};
 
-  /**
-   * 获取角色下的用户列表
-   */
-  async getRoleUsers(req: ExpressRequest, res: ExpressResponse) {
-    try {
-      const { roleId } = req.params;
-      const { page = 1, limit = 10 } = req.query;
-      const skip = (Number(page) - 1) * Number(limit);
-
-      // 检查角色是否存在
-      const role = await RoleModel.findById(roleId);
-      if (!role || role.delFlag === '1') {
-        return res.status(404).json({ code: 404, msg: '角色不存在' });
-      }
-
-      // 获取拥有该角色的用户ID
-      const { UserRoleModel } = await import('@/models/userRole/userRole.ts');
-      const userRoles = await UserRoleModel.find({ roleId }).skip(skip).limit(Number(limit));
-
-      const userIds = userRoles.map((ur) => ur.userId);
-
-      // 获取用户详情
-      const users = await UserModel.find({ _id: { $in: userIds } })
-        .populate('deptId', 'name code')
-        .select('-password');
-
-      // 获取总数
-      const total = await UserRoleModel.countDocuments({ roleId });
-
-      res.json({
-        code: 200,
-        msg: 'success',
-        data: {
-          list: users,
-          pagination: {
-            page: Number(page),
-            limit: Number(limit),
-            total,
-            pages: Math.ceil(total / Number(limit)),
-          },
-        },
-      });
-    } catch (error) {
-      console.error('获取角色用户列表失败:', error);
-      res.status(500).json({ code: 500, msg: '服务器错误' });
-    }
+/**
+ * 获取用户详情（包含角色）
+ * @route GET /api/user-role/user/:userId/detail
+ */
+const getUserWithRoles = async (req: ExpressRequest, res: ExpressResponse) => {
+  try {
+    const { userId } = req.params;
+    checkRequiredParams({ userId }, ['userId']);
+    const userWithRoles = await userRoleService.getUserWithRoles(userId as string);
+    successResponse(res, userWithRoles, '获取成功');
+  } catch (error: any) {
+    handleError(error, res, '获取用户详情失败');
   }
-}
+};
 
-export default new UserRoleController();
+/**
+ * 获取当前用户的菜单权限
+ * @route GET /api/user-role/current/menus
+ */
+const getUserMenus = async (req: ExpressRequest, res: ExpressResponse) => {
+  try {
+    const userId = checkAuth(req);
+    const menus = await userRoleService.getUserMenus(userId);
+    successResponse(res, menus, '获取成功');
+  } catch (error: any) {
+    handleError(error, res, '获取用户菜单失败');
+  }
+};
+
+/**
+ * 获取当前用户的权限标识
+ * @route GET /api/user-role/current/permissions
+ */
+const getUserPermissions = async (req: ExpressRequest, res: ExpressResponse) => {
+  try {
+    const userId = checkAuth(req);
+    const permissions = await userRoleService.getUserPermissions(userId);
+    successResponse(res, permissions, '获取成功');
+  } catch (error: any) {
+    handleError(error, res, '获取用户权限失败');
+  }
+};
+
+/**
+ * 获取当前用户的数据权限
+ * @route GET /api/user-role/current/data-scope
+ */
+const getUserDataScope = async (req: ExpressRequest, res: ExpressResponse) => {
+  try {
+    const userId = checkAuth(req);
+    const dataScope = await userRoleService.getUserDataScope(userId);
+    successResponse(res, dataScope, '获取成功');
+  } catch (error: any) {
+    handleError(error, res, '获取用户数据权限失败');
+  }
+};
+
+/**
+ * 检查当前用户是否有某个权限
+ * @route POST /api/user-role/current/check-permission
+ */
+const checkUserPermission = async (req: ExpressRequest, res: ExpressResponse) => {
+  try {
+    const userId = checkAuth(req);
+    const { permission } = req.body;
+    checkRequiredParams({ permission }, ['permission']);
+
+    const hasPermission = await userRoleService.hasPermission(userId, permission);
+    successResponse(res, { hasPermission }, '检查成功');
+  } catch (error: any) {
+    handleError(error, res, '检查用户权限失败');
+  }
+};
+
+export default {
+  assignUserRoles,
+  getUserRoles,
+  removeUserRole,
+  batchUserRoleOperation,
+  getRoleUsers,
+  checkUserRole,
+  // 路由兼容性方法
+  batchAssignRoles,
+  getUserWithRoles,
+  getUserMenus,
+  getUserPermissions,
+  getUserDataScope,
+  checkUserPermission,
+};

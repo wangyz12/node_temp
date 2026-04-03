@@ -1,6 +1,7 @@
 // src/middlewares/auth.middleware.ts
 import { UserModel } from '@/models/users/users.ts';
-import { jwtUtil } from '@/utils/jwt.ts';
+import { jwtUtil } from '@/utils/jwt.ts'
+import { OK, CREATED, NO_CONTENT, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, TOO_MANY_REQUESTS, INTERNAL_SERVER_ERROR, NOT_IMPLEMENTED, BAD_GATEWAY, SERVICE_UNAVAILABLE } from '@/constants/httpStatus';
 
 /**
  * 认证中间件
@@ -10,20 +11,20 @@ export const authenticate = async (req: ExpressRequest | any, res: any, next: an
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ code: 401, msg: '未登录' });
+      return res.status(UNAUTHORIZED).json({ code: UNAUTHORIZED, msg: '未登录' });
     }
 
     const token = authHeader.substring(7);
     const payload = jwtUtil.verifyAccessToken(token);
 
     if (!payload) {
-      return res.status(401).json({ code: 401, msg: 'token无效' });
+      return res.status(UNAUTHORIZED).json({ code: UNAUTHORIZED, msg: 'token无效' });
     }
 
     // 验证用户是否存在
     const user: any = await UserModel.findById(payload.userId);
     if (!user) {
-      return res.status(401).json({ code: 401, msg: '用户不存在' });
+      return res.status(UNAUTHORIZED).json({ code: UNAUTHORIZED, msg: '用户不存在' });
     }
     // 将用户信息挂载到请求对象
     req.user = {
@@ -35,6 +36,6 @@ export const authenticate = async (req: ExpressRequest | any, res: any, next: an
 
     next();
   } catch (error) {
-    res.status(500).json({ code: 500, msg: '认证失败' });
+    res.status(INTERNAL_SERVER_ERROR).json({ code: INTERNAL_SERVER_ERROR, msg: '认证失败' });
   }
 };

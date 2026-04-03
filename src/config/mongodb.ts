@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import mongoose from 'mongoose';
 
-import { env } from './env.ts';
+import { computedEnv as env } from './env';
 
 /**
  * MongoDB 连接类
@@ -11,13 +11,19 @@ import { env } from './env.ts';
  * 1. 避免重复创建连接，节省资源
  * 2. 统一管理连接状态
  * 3. 集中处理连接事件
+ * 4. 实现自动重连和优雅关闭
  */
 class MongoDBConnection {
   // 静态私有实例，存储唯一的连接对象
   private static instance: MongoDBConnection;
 
-  // 连接状态标志，true表示已连接，false表示未连接
+  // 连接状态标志
   private isConnected = false;
+  private isConnecting = false;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 10;
+  private reconnectDelay = 5000; // 5秒重连延迟
+  private reconnectTimer: NodeJS.Timeout | null = null;
 
   /**
    * 私有构造函数，防止外部通过 new 创建实例
@@ -45,40 +51,56 @@ class MongoDBConnection {
    */
   async connect(): Promise<void> {
     // 防止重复连接
-    if (this.isConnected) {
-      console.log(chalk.yellow('⚠️ MongoDB 已经连接'));
+    if (this.isConnected || this.isConnecting) {
+      console.log(chalk.yellow('⚠️ MongoDB 已经连接或正在连接中'));
       return;
     }
 
+    this.isConnecting = true;
+
     try {
-      // mongoose.connect() 返回连接实例
-      // 使用 env.MONGODB.URI 作为连接字符串
-      // dbName 指定数据库名称
-      // ...env.MONGODB.OPTIONS 展开其他配置选项（如连接池大小、超时时间等）
-      const conn = await mongoose.connect(env.MONGODB.URI, {
+      // 配置Mongoose连接选项，启用自动重连
+      const connectionOptions = {
         dbName: env.MONGODB.DB_NAME,
         ...env.MONGODB.OPTIONS,
-      });
+        // 自动重连配置
+        autoIndex: true,
+        maxPoolSize: 10,
+        serverSelectionTimeoutMS: 5000,
+        socketTimeoutMS: 45000,
+        family: 4, // 使用IPv4，跳过IPv6
+      };
+
+      console.log(chalk.blue('🔗 正在连接 MongoDB...'));
+      const conn = await mongoose.connect(env.MONGODB.URI, connectionOptions);
 
       // 更新连接状态
       this.isConnected = true;
+      this.isConnecting = false;
+      this.reconnectAttempts = 0; // 重置重连尝试次数
 
-      // 输出成功日志：显示连接成功和数据库主机地址
+      // 输出成功日志
       console.log(chalk.green('✅ MongoDB 连接成功:'), chalk.cyan(conn.connection.host));
+      console.log(chalk.gray(`   数据库: ${env.MONGODB.DB_NAME}`));
+      console.log(chalk.gray(`   连接池大小: ${connectionOptions.maxPoolSize}`));
 
       // 设置各种连接事件的监听器
       this.setupEventListeners();
     } catch (error) {
+      this.isConnecting = false;
+      this.isConnected = false;
+      
       // 连接失败时的错误处理
       console.error(chalk.red('❌ MongoDB 连接失败:'), error);
-
-      // 生产环境：连接失败直接退出进程，因为数据库无法连接服务无法正常运行
+      
+      // 如果是生产环境，尝试自动重连
       if (env.IS_PROD) {
-        process.exit(1);
+        console.log(chalk.yellow(`⚠️ 将在 ${this.reconnectDelay / 1000} 秒后尝试重连...`));
+        this.scheduleReconnect();
+      } else {
+        // 开发环境：抛出错误，由上层处理
+        throw error;
       }
-
-      // 开发环境：抛出错误，由上层处理
-      throw error;
     }
   }
 
@@ -91,21 +113,28 @@ class MongoDBConnection {
     /**
      * 监听连接错误事件
      * 当数据库运行过程中出现错误时触发
-     * 例如：网络问题、认证失败等
      */
     mongoose.connection.on('error', (err) => {
-      console.error(chalk.red('❌ MongoDB 运行时错误:'), err);
-      this.isConnected = false; // 发生错误时标记为未连接
+      console.error(chalk.red('❌ MongoDB 运行时错误:'), err.message);
+      this.isConnected = false;
+      
+      // 如果是网络错误，尝试重连
+      if (this.shouldAttemptReconnect(err)) {
+        this.scheduleReconnect();
+      }
     });
 
     /**
      * 监听断开连接事件
      * 当数据库连接意外断开时触发
-     * 注意：断开后 mongoose 会自动尝试重连
      */
     mongoose.connection.on('disconnected', () => {
       console.log(chalk.yellow('⚠️ MongoDB 连接断开'));
       this.isConnected = false;
+      
+      // 断开5秒后尝试重连
+      console.log(chalk.yellow(`⏰ 将在 5 秒后尝试重连...`));
+      this.scheduleReconnect(5000);
     });
 
     /**
@@ -115,56 +144,187 @@ class MongoDBConnection {
     mongoose.connection.on('reconnected', () => {
       console.log(chalk.green('🔄 MongoDB 重新连接成功'));
       this.isConnected = true;
+      this.reconnectAttempts = 0; // 重置重连尝试次数
     });
 
     /**
+     * 监听连接打开事件
+     */
+    mongoose.connection.on('connected', () => {
+      console.log(chalk.green('🔗 MongoDB 连接已建立'));
+      this.isConnected = true;
+    });
+
+    /**
+     * 监听连接关闭事件
+     */
+    mongoose.connection.on('close', () => {
+      console.log(chalk.yellow('🔒 MongoDB 连接已关闭'));
+      this.isConnected = false;
+    });
+
+    // 设置优雅关闭监听器
+    this.setupGracefulShutdown();
+  }
+
+  /**
+   * 判断是否应该尝试重连
+   */
+  private shouldAttemptReconnect(error: any): boolean {
+    // 这些错误类型通常表示网络问题，应该尝试重连
+    const reconnectableErrors = [
+      'MongoNetworkError',
+      'MongoTimeoutError',
+      'MongoServerSelectionError'
+    ];
+    
+    return reconnectableErrors.some(errorType => 
+      error.name?.includes(errorType) || error.message?.includes(errorType)
+    );
+  }
+
+  /**
+   * 安排重连尝试
+   */
+  private scheduleReconnect(delay: number = this.reconnectDelay): void {
+    // 清除现有的重连定时器
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+
+    // 检查是否超过最大重连尝试次数
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.error(chalk.red(`❌ 已达到最大重连尝试次数 (${this.maxReconnectAttempts})，停止重连`));
+      if (env.IS_PROD) {
+        console.error(chalk.red('❌ 应用因数据库连接失败而退出'));
+        process.exit(1);
+      }
+      return;
+    }
+
+    this.reconnectAttempts++;
+    console.log(chalk.yellow(`🔄 重连尝试 ${this.reconnectAttempts}/${this.maxReconnectAttempts}`));
+
+    this.reconnectTimer = setTimeout(async () => {
+      console.log(chalk.blue('🔄 正在尝试重新连接 MongoDB...'));
+      try {
+        await this.connect();
+      } catch (error) {
+        console.error(chalk.red('❌ 重连失败:'), error.message);
+        // 失败后继续安排下一次重连
+        this.scheduleReconnect(delay);
+      }
+    }, delay);
+  }
+
+  /**
+   * 设置优雅关闭监听器
+   */
+  private setupGracefulShutdown(): void {
+    /**
      * 优雅关闭：监听进程中断信号 (SIGINT)
      * 当用户按下 Ctrl+C 时触发
-     * 先关闭数据库连接，再退出进程
-     *
-     * 为什么要优雅关闭？
-     * 1. 确保正在进行的操作完成
-     * 2. 避免数据丢失或损坏
-     * 3. 释放资源
      */
-    process.on('SIGINT', async () => {
-      await mongoose.connection.close();
-      console.log(chalk.yellow('⚠️ MongoDB 连接已关闭'));
-      process.exit(0);
-    });
+    const gracefulShutdown = async (signal: string) => {
+      console.log(chalk.yellow(`\n⚠️ 收到 ${signal} 信号，开始优雅关闭...`));
+      
+      // 清除重连定时器
+      if (this.reconnectTimer) {
+        clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = null;
+      }
+
+      try {
+        // 关闭数据库连接
+        if (mongoose.connection.readyState !== 0) { // 0 = disconnected
+          console.log(chalk.yellow('🔒 正在关闭 MongoDB 连接...'));
+          await mongoose.connection.close();
+          console.log(chalk.green('✅ MongoDB 连接已关闭'));
+        }
+        
+        console.log(chalk.green('🎉 优雅关闭完成'));
+        process.exit(0);
+      } catch (error) {
+        console.error(chalk.red('❌ 关闭数据库连接时出错:'), error);
+        process.exit(1);
+      }
+    };
+
+    // 监听各种退出信号
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    
+    // 在开发环境中也监听SIGUSR2（nodemon重启）
+    if (env.IS_DEV) {
+      process.once('SIGUSR2', () => {
+        gracefulShutdown('SIGUSR2 (nodemon restart)');
+      });
+    }
   }
 
   /**
    * 手动断开数据库连接
    * 用于需要主动关闭连接的场景
-   * 例如：测试用例执行完毕、应用关闭等
    */
   async disconnect(): Promise<void> {
-    if (!this.isConnected) return; // 如果已经断开，直接返回
+    if (!this.isConnected) {
+      console.log(chalk.yellow('⚠️ MongoDB 已经断开连接'));
+      return;
+    }
 
-    await mongoose.connection.close();
-    this.isConnected = false;
-    console.log(chalk.yellow('⚠️ MongoDB 连接已手动关闭'));
+    // 清除重连定时器
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+
+    try {
+      console.log(chalk.yellow('🔒 正在手动关闭 MongoDB 连接...'));
+      await mongoose.connection.close();
+      this.isConnected = false;
+      console.log(chalk.green('✅ MongoDB 连接已手动关闭'));
+    } catch (error) {
+      console.error(chalk.red('❌ 手动关闭连接时出错:'), error);
+      throw error;
+    }
   }
 
   /**
    * 获取当前连接状态
-   * 用于其他地方需要判断数据库连接状态时
-   * @returns boolean - true: 已连接, false: 未连接
    */
   getConnectionStatus(): boolean {
     return this.isConnected;
   }
+
+  /**
+   * 获取连接详情
+   */
+  getConnectionInfo(): {
+    isConnected: boolean;
+    isConnecting: boolean;
+    reconnectAttempts: number;
+    maxReconnectAttempts: number;
+    readyState: number;
+    host?: string;
+    dbName?: string;
+  } {
+    return {
+      isConnected: this.isConnected,
+      isConnecting: this.isConnecting,
+      reconnectAttempts: this.reconnectAttempts,
+      maxReconnectAttempts: this.maxReconnectAttempts,
+      readyState: mongoose.connection.readyState,
+      host: mongoose.connection.host,
+      dbName: mongoose.connection.db?.databaseName,
+    };
+  }
 }
 
 // 导出单例实例
-// 整个应用共享同一个 MongoDBConnection 实例
 export const mongoDB = MongoDBConnection.getInstance();
 
 /**
  * 为了方便直接使用，也导出一个简洁的连接函数
- * 这样在其他地方可以直接：
- * import { connectMongoDB } from './config/mongodb.js'
- * await connectMongoDB()
  */
 export const connectMongoDB = () => mongoDB.connect();

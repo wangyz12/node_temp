@@ -235,6 +235,42 @@ export class CaptchaUtil {
   static cleanExpired() {
     return cleanExpiredCaptchas(true);
   }
+
+  /**
+   * 检查验证码是否存在
+   */
+  static exists(uuid: string): boolean {
+    const captcha = captchaStore.get(uuid);
+    if (!captcha) {
+      return false;
+    }
+    
+    // 检查是否过期
+    if (captcha.expires < Date.now()) {
+      captchaStore.delete(uuid);
+      return false;
+    }
+    
+    return true;
+  }
+
+  /**
+   * 获取验证码剩余有效期（毫秒）
+   */
+  static getExpiresIn(uuid: string): number {
+    const captcha = captchaStore.get(uuid);
+    if (!captcha) {
+      return 0;
+    }
+    
+    const now = Date.now();
+    if (captcha.expires < now) {
+      captchaStore.delete(uuid);
+      return 0;
+    }
+    
+    return captcha.expires - now;
+  }
 }
 
 // ==================== 在文件末尾启动定时任务 ====================

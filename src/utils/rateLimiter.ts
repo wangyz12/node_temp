@@ -1,7 +1,8 @@
 // src/utils/rateLimiter.ts - 简化版
 import { rateLimit } from 'express-rate-limit';
 
-import { logger } from '@/utils/logger.js';
+import { logger } from '@/utils/logger.js'
+import { OK, CREATED, NO_CONTENT, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, TOO_MANY_REQUESTS, INTERNAL_SERVER_ERROR, NOT_IMPLEMENTED, BAD_GATEWAY, SERVICE_UNAVAILABLE } from '@/constants/httpStatus';
 
 export class RateLimiterUtil {
   /**
@@ -16,11 +17,11 @@ export class RateLimiterUtil {
       standardHeaders: 'draft-8',
       legacyHeaders: false,
       skipSuccessfulRequests: skipSuccessful,
-      message: { code: 429, msg: message },
+      message: { code: TOO_MANY_REQUESTS, msg: message },
       statusCode: 429,
       handler: (req, res) => {
         logger.warn(`限流触发: ${req.ip} - ${req.path}`);
-        res.status(429).json({ code: 429, msg: message });
+        res.status(TOO_MANY_REQUESTS).json({ code: TOO_MANY_REQUESTS, msg: message });
       },
     });
   }

@@ -1,87 +1,200 @@
 // src/config/env.ts
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { cleanEnv, port, str, num, url, bool, makeValidator } from 'envalid';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// 自定义验证器：验证逗号分隔的字符串数组
+const commaSeparatedArray = makeValidator<string[]>((input) => {
+  if (!input) return [];
+  return input.split(',').map((item) => item.trim()).filter(Boolean);
+});
 
-// 环境变量工具对象
-export const env = {
+// 自定义验证器：验证MongoDB连接字符串
+const mongoUriValidator = makeValidator<string>((input) => {
+  if (!input) {
+    throw new Error('MONGODB_URI is required');
+  }
+  
+  // 基本的MongoDB URI格式验证
+  if (!input.startsWith('mongodb://') && !input.startsWith('mongodb+srv://')) {
+    throw new Error('MONGODB_URI must start with mongodb:// or mongodb+srv://');
+  }
+  
+  return input;
+});
+
+// 自定义验证器：验证JWT过期时间格式
+const jwtExpiresInValidator = makeValidator<string>((input) => {
+  const defaultExpiry = '24h';
+  if (!input) return defaultExpiry;
+  
+  // 验证格式：数字+单位（s, m, h, d）
+  const regex = /^(\d+)(s|m|h|d)$/;
+  if (!regex.test(input)) {
+    throw new Error('JWT_EXPIRES_IN must be in format like: 60s, 30m, 24h, 7d');
+  }
+  
+  return input;
+});
+
+// 使用envalid进行严格的类型验证和转换
+export const env = cleanEnv(process.env, {
+  // 服务器配置
+  PORT: port({ default: 3000, desc: '服务器端口号' }),
+  NODE_ENV: str({ 
+    choices: ['development', 'production', 'test'], 
+    default: 'development',
+    desc: '运行环境'
+  }),
+  
+  // MongoDB配置 - 生产环境必须，开发环境有默认值
+  MONGODB_URI: mongoUriValidator({
+    default: process.env.NODE_ENV === 'production' ? undefined : 'mongodb://127.0.0.1:27017/my_admin',
+    desc: 'MongoDB连接字符串'
+  }),
+  MONGODB_DB_NAME: str({ 
+    default: 'my_admin',
+    desc: 'MongoDB数据库名称'
+  }),
+  
+  // JWT配置
+  JWT_SECRET: str({ 
+    desc: 'JWT签名密钥，必须设置',
+    example: 'your-super-secret-jwt-key-change-this-in-production'
+  }),
+  JWT_EXPIRES_IN: jwtExpiresInValidator({
+    default: '24h',
+    desc: 'JWT过期时间，格式如: 60s, 30m, 24h, 7d'
+  }),
+  
+  // API配置
+  API_PREFIX: str({ 
+    default: '/api',
+    desc: 'API前缀'
+  }),
+  CORS_ORIGIN: commaSeparatedArray({
+    default: ['http://localhost:3001'],
+    desc: 'CORS允许的源，逗号分隔'
+  }),
+  
+  // 速率限制配置
+  RATE_LIMIT_WINDOW_MS: num({ 
+    default: 900000, // 15分钟
+    desc: '速率限制窗口时间（毫秒）'
+  }),
+  RATE_LIMIT_MAX: num({ 
+    default: 100,
+    desc: '速率限制最大请求数'
+  }),
+  LOGIN_LIMIT_WINDOW_MS: num({ 
+    default: 900000, // 15分钟
+    desc: '登录速率限制窗口时间（毫秒）'
+  }),
+  LOGIN_LIMIT_MAX: num({ 
+    default: 5,
+    desc: '登录速率限制最大请求数'
+  }),
+  REGISTER_LIMIT_WINDOW_MS: num({ 
+    default: 3600000, // 1小时
+    desc: '注册速率限制窗口时间（毫秒）'
+  }),
+  REGISTER_LIMIT_MAX: num({ 
+    default: 3,
+    desc: '注册速率限制最大请求数'
+  }),
+  
+  // PostgreSQL配置（保留原有，可选）
+  DB_HOST: str({ 
+    default: 'localhost',
+    desc: 'PostgreSQL主机地址'
+  }),
+  DB_PORT: port({ 
+    default: 5432,
+    desc: 'PostgreSQL端口'
+  }),
+  DB_NAME: str({ 
+    default: 'my_admin',
+    desc: 'PostgreSQL数据库名称'
+  }),
+  DB_USER: str({ 
+    default: 'postgres',
+    desc: 'PostgreSQL用户名'
+  }),
+  DB_PASSWORD: str({ 
+    default: '',
+    desc: 'PostgreSQL密码'
+  }),
+  
+  // 日志配置
+  LOG_LEVEL: str({ 
+    choices: ['error', 'warn', 'info', 'debug'],
+    default: 'info',
+    desc: '日志级别'
+  }),
+  LOG_TO_FILE: bool({ 
+    default: false,
+    desc: '是否将日志输出到文件'
+  }),
+});
+
+// 导出计算属性，保持与原有代码兼容
+export const computedEnv = {
   // 服务器
-  PORT: parseInt(process.env.PORT || '3000', 10),
-  NODE_ENV: process.env.NODE_ENV || 'development',
-  IS_DEV: process.env.NODE_ENV === 'development',
-  IS_PROD: process.env.NODE_ENV === 'production',
-
-  // PostgreSQL 配置（保留原有）
+  PORT: env.PORT,
+  NODE_ENV: env.NODE_ENV,
+  IS_DEV: env.NODE_ENV === 'development',
+  IS_PROD: env.NODE_ENV === 'production',
+  
+  // PostgreSQL配置（保留原有）
   DB: {
-    HOST: process.env.DB_HOST || 'localhost',
-    PORT: parseInt(process.env.DB_PORT || '5432', 10),
-    NAME: process.env.DB_NAME || 'my_admin',
-    USER: process.env.DB_USER || 'postgres',
-    PASSWORD: process.env.DB_PASSWORD || '',
+    HOST: env.DB_HOST,
+    PORT: env.DB_PORT,
+    NAME: env.DB_NAME,
+    USER: env.DB_USER,
+    PASSWORD: env.DB_PASSWORD,
     get URL(): string {
       return `postgresql://${this.USER}:${this.PASSWORD}@${this.HOST}:${this.PORT}/${this.NAME}`;
     },
   },
-
-  // MongoDB 配置（新增）
+  
+  // MongoDB配置
   MONGODB: {
-    URI: process.env.MONGO_URL || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/my_admin',
-    DB_NAME: process.env.MONGODB_DB_NAME || 'my_admin',
-    // 连接选项
+    URI: env.MONGODB_URI,
+    DB_NAME: env.MONGODB_DB_NAME,
     OPTIONS: {
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
     },
-    // 获取完整的连接字符串（如果需要）
     get URL(): string {
       return this.URI;
     },
   },
-
+  
   // JWT
   JWT: {
-    SECRET: process.env.JWT_SECRET || 'default-secret-do-not-use-in-production',
-    EXPIRES_IN: process.env.JWT_EXPIRES_IN || '24h',
+    SECRET: env.JWT_SECRET,
+    EXPIRES_IN: env.JWT_EXPIRES_IN,
   },
-
+  
   // API
-  API_PREFIX: process.env.API_PREFIX || '/api',
-  CORS_ORIGIN: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3001'],
+  API_PREFIX: env.API_PREFIX,
+  CORS_ORIGIN: env.CORS_ORIGIN,
   RATE_LIMIT: {
-    WINDOW_MS: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),
-    MAX: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
-
+    WINDOW_MS: env.RATE_LIMIT_WINDOW_MS,
+    MAX: env.RATE_LIMIT_MAX,
     LOGIN: {
-      WINDOW_MS: parseInt(process.env.LOGIN_LIMIT_WINDOW_MS || '900000', 10),
-      MAX: parseInt(process.env.LOGIN_LIMIT_MAX || '5', 10),
+      WINDOW_MS: env.LOGIN_LIMIT_WINDOW_MS,
+      MAX: env.LOGIN_LIMIT_MAX,
     },
-
     REGISTER: {
-      WINDOW_MS: parseInt(process.env.REGISTER_LIMIT_WINDOW_MS || '3600000', 10),
-      MAX: parseInt(process.env.REGISTER_LIMIT_MAX || '3', 10),
+      WINDOW_MS: env.REGISTER_LIMIT_WINDOW_MS,
+      MAX: env.REGISTER_LIMIT_MAX,
     },
   },
+  
+  // 日志
+  LOG_LEVEL: env.LOG_LEVEL,
+  LOG_TO_FILE: env.LOG_TO_FILE,
 } as const;
 
-// 验证必要的环境变量
-const requiredEnvVars = ['JWT_SECRET'] as const;
-for (const varName of requiredEnvVars) {
-  if (!process.env[varName]) {
-    console.error(`❌ 缺少必要的环境变量: ${varName}`);
-    process.exit(1);
-  }
-}
-
-// MongoDB 连接警告（非必需，但建议配置）
-if (!process.env.MONGODB_URI) {
-  console.warn('⚠️ 未设置 MONGODB_URI，将使用默认值: mongodb://127.0.0.1:27017/my_admin');
-}
-
-// 生产环境警告
-if (env.IS_PROD && env.JWT.SECRET === 'default-secret-do-not-use-in-production') {
-  console.error('❌ 生产环境必须设置 JWT_SECRET');
-  process.exit(1);
-}
+// 为了向后兼容，同时导出env和computedEnv
+export default computedEnv;

@@ -1,5 +1,6 @@
 // src/middlewares/permission.ts
-import { UserRoleService } from '@/services/userRole.service.ts';
+import { UserRoleService } from '@/services/userRole.service.ts'
+import { OK, CREATED, NO_CONTENT, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, TOO_MANY_REQUESTS, INTERNAL_SERVER_ERROR, NOT_IMPLEMENTED, BAD_GATEWAY, SERVICE_UNAVAILABLE } from '@/constants/httpStatus';
 
 const userRoleService = new UserRoleService();
 
@@ -12,7 +13,7 @@ export const checkPermission = (permission: string) => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
-        return res.status(401).json({ code: 401, msg: '请先登录' });
+        return res.status(UNAUTHORIZED).json({ code: UNAUTHORIZED, msg: '请先登录' });
       }
 
       // 检查用户是否是超级管理员（拥有admin角色）
@@ -27,13 +28,13 @@ export const checkPermission = (permission: string) => {
       // 检查用户是否有该权限
       const hasPerm = await userRoleService.hasPermission(userId, permission);
       if (!hasPerm) {
-        return res.status(403).json({ code: 403, msg: '没有操作权限' });
+        return res.status(FORBIDDEN).json({ code: FORBIDDEN, msg: '没有操作权限' });
       }
 
       next();
     } catch (error) {
       console.error('权限检查失败:', error);
-      res.status(500).json({ code: 500, msg: '权限检查失败' });
+      res.status(INTERNAL_SERVER_ERROR).json({ code: INTERNAL_SERVER_ERROR, msg: '权限检查失败' });
     }
   };
 };
@@ -47,7 +48,7 @@ export const checkDataScope = (options: { deptAlias?: string; userAlias?: string
     try {
       const userId = req.user?.userId;
       if (!userId) {
-        return res.status(401).json({ code: 401, msg: '请先登录' });
+        return res.status(UNAUTHORIZED).json({ code: UNAUTHORIZED, msg: '请先登录' });
       }
 
       // 获取用户的数据权限
@@ -64,7 +65,7 @@ export const checkDataScope = (options: { deptAlias?: string; userAlias?: string
       next();
     } catch (error) {
       console.error('数据权限检查失败:', error);
-      res.status(500).json({ code: 500, msg: '数据权限检查失败' });
+      res.status(INTERNAL_SERVER_ERROR).json({ code: INTERNAL_SERVER_ERROR, msg: '数据权限检查失败' });
     }
   };
 };
@@ -78,7 +79,7 @@ export const checkRole = (roleNames: string | string[]) => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
-        return res.status(401).json({ code: 401, msg: '请先登录' });
+        return res.status(UNAUTHORIZED).json({ code: UNAUTHORIZED, msg: '请先登录' });
       }
 
       // 如果是超级管理员，跳过角色检查
@@ -95,13 +96,13 @@ export const checkRole = (roleNames: string | string[]) => {
       // 检查用户是否拥有任一所需角色
       const hasRole = requiredRoles.some((role) => userRoleNames.includes(role));
       if (!hasRole) {
-        return res.status(403).json({ code: 403, msg: '没有操作权限' });
+        return res.status(FORBIDDEN).json({ code: FORBIDDEN, msg: '没有操作权限' });
       }
 
       next();
     } catch (error) {
       console.error('角色检查失败:', error);
-      res.status(500).json({ code: 500, msg: '角色检查失败' });
+      res.status(INTERNAL_SERVER_ERROR).json({ code: INTERNAL_SERVER_ERROR, msg: '角色检查失败' });
     }
   };
 };

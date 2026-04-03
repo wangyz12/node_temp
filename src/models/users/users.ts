@@ -1,5 +1,5 @@
 // src/models/users/users.ts
-import mongoose, { CallbackError, Document, Schema, Types } from 'mongoose';
+import mongoose, { Document, Schema, Types } from 'mongoose';
 
 import { bcryptUtil } from '@/utils/bcrypt.ts';
 
@@ -7,11 +7,11 @@ export interface IUser extends Document {
   account: string;
   password: string;
   username: string;
-  deptId: Types.ObjectId; // 所属部门ID（必填）- 替代原来的 department
+  deptId: Types.ObjectId;
   avatar?: string;
   phone?: string;
   email?: string;
-  status: string; // 用户状态：0-正常，1-停用
+  status: string;
   tokenVersion: number;
   roles?: string[];
   createdAt: Date;
@@ -19,8 +19,10 @@ export interface IUser extends Document {
   comparePassword(candidatePassword: string): Promise<boolean>;
   incrementTokenVersion(): Promise<void>;
 }
-// 创建一个默认的部门ID（可以使用固定的ObjectId）
-const DEFAULT_DEPT_ID = new Types.ObjectId('000000000000000000000001'); // 临时默认部门ID
+
+// 创建一个默认的部门ID
+const DEFAULT_DEPT_ID = new Types.ObjectId('000000000000000000000001');
+
 const userSchema = new Schema<IUser>(
   {
     account: {
@@ -34,7 +36,7 @@ const userSchema = new Schema<IUser>(
     password: {
       type: String,
       required: [true, '密码不能为空'],
-      select: false,
+      select: false, // 关键：默认查询不包含密码字段
     },
     username: {
       type: String,
@@ -43,12 +45,10 @@ const userSchema = new Schema<IUser>(
       maxlength: [50, '姓名长度不能大于50'],
       default: '默认用户',
     },
-    // 👇 新增：所属部门ID（替代原来的 employeeId 和 department）
     deptId: {
       type: Schema.Types.ObjectId,
       ref: 'Dept',
-      // required: [true, '所属部门不能为空'],
-      default: DEFAULT_DEPT_ID, // 设置默认值
+      default: DEFAULT_DEPT_ID,
       index: true,
     },
     avatar: {
@@ -60,7 +60,7 @@ const userSchema = new Schema<IUser>(
       trim: true,
       sparse: true,
       unique: true,
-      default: '',
+      default: undefined,
       validate: {
         validator: function (v: string) {
           return !v || /^1[3-9]\d{9}$/.test(v);
@@ -74,7 +74,7 @@ const userSchema = new Schema<IUser>(
       lowercase: true,
       sparse: true,
       unique: true,
-      default: '',
+      default: undefined,
       validate: {
         validator: function (v: string) {
           return !v || /^\S+@\S+\.\S+$/.test(v);
@@ -82,7 +82,6 @@ const userSchema = new Schema<IUser>(
         message: '邮箱格式不正确',
       },
     },
-    // 用户状态：0-正常，1-停用
     status: {
       type: String,
       enum: ['0', '1'],
@@ -91,15 +90,20 @@ const userSchema = new Schema<IUser>(
     tokenVersion: {
       type: Number,
       default: 0,
+      select: false, // 默认查询不包含tokenVersion字段
     },
   },
   {
     timestamps: true,
+    // 确保toJSON转换删除敏感字段
     toJSON: {
       transform: function (doc, ret: any) {
+        // 删除密码和其他敏感字段
         delete ret.password;
+        delete ret.tokenVersion;
         delete ret.__v;
 
+        // 转换 _id 为 id
         if (ret._id) {
           ret.id = ret._id.toString();
           delete ret._id;
@@ -108,9 +112,11 @@ const userSchema = new Schema<IUser>(
         return ret;
       },
     },
+    // 确保toObject转换也删除敏感字段
     toObject: {
       transform: function (doc, ret: any) {
         delete ret.password;
+        delete ret.tokenVersion;
         delete ret.__v;
 
         if (ret._id) {

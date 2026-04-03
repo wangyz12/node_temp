@@ -9,9 +9,10 @@ import loggerMiddleware from '@/middlewares/logger.ts';
 import { startCaptchaCleaner } from '@/utils/captcha.ts';
 import { RateLimiterUtil } from '@/utils/rateLimiter.ts';
 
-import { env } from './config/env.ts';
+import { computedEnv as env } from './config/env.ts';
 import { SecurityConfig } from './config/security.ts';
-import router from './routes/index.ts';
+import router from './routes/index.ts'
+import { OK, CREATED, NO_CONTENT, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, TOO_MANY_REQUESTS, INTERNAL_SERVER_ERROR, NOT_IMPLEMENTED, BAD_GATEWAY, SERVICE_UNAVAILABLE } from '@/constants/httpStatus';
 import './utils/global.ts';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -29,7 +30,7 @@ const app: Express = express();
 
 // ==================== 1. 健康检查（必须最前面） ====================
 app.get('/health', (req, res) => {
-  res.status(200).json({
+  res.status(OK).json({
     status: 'OK',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
@@ -70,13 +71,13 @@ console.log('✅ 路由注册完成');
 // ==================== 9. 404 处理 ====================
 app.use('*', (req, res) => {
   console.log(`404: ${req.method} ${req.originalUrl}`);
-  res.status(404).json({ code: 404, message: '接口不存在' });
+  res.status(NOT_FOUND).json({ code: NOT_FOUND, message: '接口不存在' });
 });
 
 // ==================== 10. 错误处理 ====================
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error('❌ 服务器错误:', err.stack);
-  res.status(500).json({ code: 500, message: '服务器内部错误' });
+  res.status(INTERNAL_SERVER_ERROR).json({ code: INTERNAL_SERVER_ERROR, message: '服务器内部错误' });
 });
 
 export default app;

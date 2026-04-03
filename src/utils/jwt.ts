@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-import { env } from '@/config/env.ts'; // 从你的 env.ts 导入
+import { computedEnv as env } from '@/config/env.ts'; // 从你的 env.ts 导入
 
 // 配置token的对象类型，可自行添加属性
 export interface TokenPayload {

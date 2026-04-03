@@ -11,7 +11,7 @@ import chalk from 'chalk';
 import debugLib from 'debug';
 import http from 'http';
 
-import { env } from './config/env.ts';
+import { computedEnv as env } from './config/env.ts';
 import { connectMongoDB, mongoDB } from './config/mongodb.ts';
 import app from './app.ts';
 
