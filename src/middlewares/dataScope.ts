@@ -1,10 +1,7 @@
 // src/middlewares/dataScope.middleware.ts
-import { NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
-
-import { RoleModel } from '@/models/role/role.ts';
-import { RoleDeptModel } from '@/models/roleDept/roleDept.ts';
-import { UserRoleModel } from '@/models/userRole/userRole.ts';
+import { RoleDeptModel } from '@/models/system/roleDept/roleDept';
+import { UserRoleModel } from '@/models/system/userRole/userRole';
 
 /**
  * 数据权限过滤
@@ -91,5 +88,3 @@ async function getChildDepts(deptId: string): Promise<string[]> {
 
   return ids;
 }
-
-

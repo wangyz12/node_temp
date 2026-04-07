@@ -1,13 +1,13 @@
 // src/services/userRole.service.ts
 import mongoose, { Types } from 'mongoose';
 
-import { DeptModel } from '@/models/dept/dept';
-import { MenuModel } from '@/models/menu/menu';
-import { RoleModel } from '@/models/role/role';
-import { RoleDeptModel } from '@/models/roleDept/roleDept';
-import { RoleMenuModel } from '@/models/roleMenu/roleMenu';
-import { UserRoleModel } from '@/models/userRole/userRole';
-import { UserModel } from '@/models/users/users';
+import { DeptModel } from '@/models/system/dept/dept';
+import { MenuModel } from '@/models/system/menu/menu';
+import { RoleModel } from '@/models/system/role/role';
+import { RoleDeptModel } from '@/models/system/roleDept/roleDept';
+import { RoleMenuModel } from '@/models/system/roleMenu/roleMenu';
+import { UserRoleModel } from '@/models/system/userRole/userRole';
+import { UserModel } from '@/models/system/users/users';
 
 export class UserRoleService {
   /**

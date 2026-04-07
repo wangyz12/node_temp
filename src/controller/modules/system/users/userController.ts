@@ -1,29 +1,22 @@
 // src/controller/modules/users/userController.ts
 /**
  * 用户控制器
- * 
+ *
  * 负责处理用户相关的HTTP请求，包括：
  * - 用户注册、登录、登出
  * - 用户信息管理
  * - 密码修改
  * - 用户列表和详情查询
  * - 管理员操作用户
- * 
+ *
  * 控制器层只负责HTTP请求/响应处理，业务逻辑在Service层实现。
- * 
+ *
  * @module UserController
  */
 
-import { UserService } from '@/services/user.service.ts';
+import { UserService } from '@/services/system/user.service';
 import type { ExpressRequest, ExpressResponse } from '@/types/express.d.ts';
-import {
-  handleError,
-  successResponse,
-  createdResponse,
-  checkAuth,
-  checkRequiredParams,
-  checkArrayParam,
-} from '@/utils/errorHandler.ts';
+import { handleError, successResponse, createdResponse, checkAuth, checkRequiredParams, checkArrayParam } from '@/utils/errorHandler.ts';
 
 const userService = new UserService();
 
@@ -261,12 +254,12 @@ const batchDeleteUsers = async (req: ExpressRequest, res: ExpressResponse) => {
   try {
     const { ids } = req.body;
     checkArrayParam(ids, 'ids');
-    
+
     // 逐个删除用户
     for (const id of ids) {
       await userService.deleteUser(id as string);
     }
-    
+
     successResponse(res, null, '批量删除成功');
   } catch (error: any) {
     handleError(error, res, '批量删除用户失败');

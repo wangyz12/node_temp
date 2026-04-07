@@ -1,11 +1,11 @@
 // src/services/role.service.ts
 import { Types } from 'mongoose';
 
-import { DeptModel } from '@/models/dept/dept.ts';
-import { MenuModel } from '@/models/menu/menu.ts';
-import { RoleModel } from '@/models/role/role.ts';
-import { RoleDeptModel } from '@/models/roleDept/roleDept.ts';
-import { RoleMenuModel } from '@/models/roleMenu/roleMenu.ts';
+import { DeptModel } from '@/models/system/dept/dept';
+import { MenuModel } from '@/models/system/menu/menu';
+import { RoleModel } from '@/models/system/role/role';
+import { RoleDeptModel } from '@/models/system/roleDept/roleDept';
+import { RoleMenuModel } from '@/models/system/roleMenu/roleMenu';
 import { createAppError } from '@/utils/errorHandler.ts';
 
 export class RoleService {
@@ -20,10 +20,7 @@ export class RoleService {
     const conditions: any = { delFlag: { $ne: '1' } };
 
     if (keyword) {
-      conditions.$or = [
-        { name: new RegExp(keyword as string, 'i') },
-        { label: new RegExp(keyword as string, 'i') },
-      ];
+      conditions.$or = [{ name: new RegExp(keyword as string, 'i') }, { label: new RegExp(keyword as string, 'i') }];
     }
 
     if (status !== undefined && status !== '') {
@@ -34,10 +31,7 @@ export class RoleService {
     const total = await RoleModel.countDocuments(conditions);
 
     // 查询角色列表
-    const roles = await RoleModel.find(conditions)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit));
+    const roles = await RoleModel.find(conditions).sort({ createdAt: -1 }).skip(skip).limit(Number(limit));
 
     // 格式化角色数据
     const formattedRoles = roles.map((role) => ({
@@ -229,9 +223,7 @@ export class RoleService {
    * 获取角色已分配的菜单
    */
   async getRoleMenus(roleId: string) {
-    const roleMenus = await RoleMenuModel.find({ roleId })
-      .populate('menuId', 'name path component icon orderNum parentId')
-      .select('menuId');
+    const roleMenus = await RoleMenuModel.find({ roleId }).populate('menuId', 'name path component icon orderNum parentId').select('menuId');
 
     return roleMenus.map((rm) => rm.menuId?._id.toString()).filter(Boolean);
   }
@@ -240,9 +232,7 @@ export class RoleService {
    * 获取角色已分配的部门
    */
   async getRoleDepts(roleId: string) {
-    const roleDepts = await RoleDeptModel.find({ roleId })
-      .populate('deptId', 'name orderNum parentId')
-      .select('deptId');
+    const roleDepts = await RoleDeptModel.find({ roleId }).populate('deptId', 'name orderNum parentId').select('deptId');
 
     return roleDepts.map((rd) => rd.deptId?._id.toString()).filter(Boolean);
   }

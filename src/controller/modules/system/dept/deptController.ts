@@ -13,7 +13,7 @@
  * @module DeptController
  */
 
-import { DeptService } from '@/services/dept.service';
+import { DeptService } from '@/services/system/dept.service';
 import type { ExpressRequest, ExpressResponse } from '@/types/express';
 import { handleError, successResponse, createdResponse, checkRequiredParams } from '@/utils/errorHandler';
 

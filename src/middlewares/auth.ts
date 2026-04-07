@@ -1,7 +1,21 @@
 // src/middlewares/auth.middleware.ts
-import { UserModel } from '@/models/users/users.ts';
-import { jwtUtil } from '@/utils/jwt.ts'
-import { OK, CREATED, NO_CONTENT, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, TOO_MANY_REQUESTS, INTERNAL_SERVER_ERROR, NOT_IMPLEMENTED, BAD_GATEWAY, SERVICE_UNAVAILABLE } from '@/constants/httpStatus';
+import { UserModel } from '@/models/system/users/users';
+import { jwtUtil } from '@/utils/jwt.ts';
+import {
+  OK,
+  CREATED,
+  NO_CONTENT,
+  BAD_REQUEST,
+  UNAUTHORIZED,
+  FORBIDDEN,
+  NOT_FOUND,
+  CONFLICT,
+  TOO_MANY_REQUESTS,
+  INTERNAL_SERVER_ERROR,
+  NOT_IMPLEMENTED,
+  BAD_GATEWAY,
+  SERVICE_UNAVAILABLE,
+} from '@/constants/httpStatus';
 
 /**
  * 认证中间件

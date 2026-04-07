@@ -1,8 +1,8 @@
 // src/services/dept.service.ts
 import { Types } from 'mongoose';
 
-import { DeptModel } from '@/models/dept/dept.ts';
-import { UserModel } from '@/models/users/users.ts';
+import { DeptModel } from '@/models/system/dept/dept';
+import { UserModel } from '@/models/system/users/users';
 import { createAppError } from '@/utils/errorHandler.ts';
 
 export class DeptService {

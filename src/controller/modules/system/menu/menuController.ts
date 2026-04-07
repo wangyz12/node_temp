@@ -12,7 +12,7 @@
  * @module MenuController
  */
 
-import { MenuService } from '@/services/menu.service';
+import { MenuService } from '@/services/system/menu.service';
 import type { ExpressRequest, ExpressResponse } from '@/types/express';
 import { handleError, successResponse, createdResponse, checkRequiredParams } from '@/utils/errorHandler';
 

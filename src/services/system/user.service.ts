@@ -1,9 +1,9 @@
 // src/services/user.service.ts
 import { Types } from 'mongoose';
 
-import { UserModel } from '@/models/users/users.ts';
-import { UserRoleModel } from '@/models/userRole/userRole.ts';
-import { RoleModel } from '@/models/role/role.ts';
+import { UserModel } from '@/models/system/users/users';
+import { UserRoleModel } from '@/models/system/userRole/userRole';
+import { RoleModel } from '@/models/system/role/role';
 import { CaptchaUtil } from '@/utils/captcha.ts';
 import { generateUserToken, generateUserTokenFromExisting } from '@/utils/userToken.ts';
 import { DEFAULT_ROLE } from '@/constants/roles.ts';
@@ -22,14 +22,7 @@ export class UserService {
   /**
    * 用户注册
    */
-  async register(data: {
-    account: string;
-    password: string;
-    username?: string;
-    deptId: string;
-    phone?: string;
-    email?: string;
-  }) {
+  async register(data: { account: string; password: string; username?: string; deptId: string; phone?: string; email?: string }) {
     const { account, password, username, deptId, phone, email } = data;
 
     // 基础验证
@@ -91,12 +84,7 @@ export class UserService {
   /**
    * 用户登录
    */
-  async login(data: {
-    account: string;
-    password: string;
-    uuid: string;
-    code: string;
-  }) {
+  async login(data: { account: string; password: string; uuid: string; code: string }) {
     const { account, password, uuid, code } = data;
 
     // 验证验证码
@@ -139,11 +127,14 @@ export class UserService {
   /**
    * 修改密码
    */
-  async changePassword(userId: string, data: {
-    oldPassword: string;
-    newPassword: string;
-    confirmPassword: string;
-  }) {
+  async changePassword(
+    userId: string,
+    data: {
+      oldPassword: string;
+      newPassword: string;
+      confirmPassword: string;
+    }
+  ) {
     const { oldPassword, newPassword, confirmPassword } = data;
 
     // 验证新密码和确认密码是否一致
@@ -191,7 +182,7 @@ export class UserService {
   async updateUserInfo(userId: string, data: any) {
     // 过滤允许更新的字段
     const updateData: any = {};
-    ALLOWED_UPDATE_FIELDS.forEach(field => {
+    ALLOWED_UPDATE_FIELDS.forEach((field) => {
       if (data[field] !== undefined) {
         updateData[field] = data[field];
       }
@@ -211,11 +202,7 @@ export class UserService {
     }
 
     // 更新用户信息
-    const user = await UserModel.findByIdAndUpdate(
-      userId,
-      { $set: updateData },
-      { returnDocument: 'after', runValidators: true }
-    ).select('-password');
+    const user = await UserModel.findByIdAndUpdate(userId, { $set: updateData }, { returnDocument: 'after', runValidators: true }).select('-password');
 
     if (!user) {
       throw new Error('用户不存在');
@@ -227,16 +214,7 @@ export class UserService {
   /**
    * 管理员创建用户
    */
-  async createUserByAdmin(data: {
-    account: string;
-    password: string;
-    username?: string;
-    deptId: string;
-    phone?: string;
-    email?: string;
-    status?: string;
-    roles?: string[];
-  }) {
+  async createUserByAdmin(data: { account: string; password: string; username?: string; deptId: string; phone?: string; email?: string; status?: string; roles?: string[] }) {
     const { account, password, username, deptId, phone, email, status, roles } = data;
 
     // 基础验证
@@ -287,7 +265,7 @@ export class UserService {
 
     // 如果指定了角色，分配角色
     if (roles && roles.length > 0) {
-      const roleAssignments = roles.map(roleId => ({
+      const roleAssignments = roles.map((roleId) => ({
         userId: user._id,
         roleId: new Types.ObjectId(roleId),
       }));
@@ -311,11 +289,7 @@ export class UserService {
 
     // 1. 关键词搜索
     if (keyword) {
-      conditions.$or = [
-        { account: new RegExp(keyword, 'i') },
-        { username: new RegExp(keyword, 'i') },
-        { phone: new RegExp(keyword, 'i') },
-      ];
+      conditions.$or = [{ account: new RegExp(keyword, 'i') }, { username: new RegExp(keyword, 'i') }, { phone: new RegExp(keyword, 'i') }];
     }
 
     // 2. 指定部门查询
@@ -332,12 +306,7 @@ export class UserService {
     const total = await UserModel.countDocuments(conditions);
 
     // 查询用户列表（关联部门信息）
-    const users = await UserModel.find(conditions)
-      .populate('deptId', 'name code')
-      .select('-password')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit));
+    const users = await UserModel.find(conditions).populate('deptId', 'name code').select('-password').sort({ createdAt: -1 }).skip(skip).limit(Number(limit));
 
     return {
       list: users,
@@ -362,7 +331,7 @@ export class UserService {
 
     // 获取用户角色信息
     const userRoles = await UserRoleModel.find({ userId: id }).populate<{ roleId: any }>('roleId');
-    const roles = userRoles.map(ur => {
+    const roles = userRoles.map((ur) => {
       const role = ur.roleId as any;
       return {
         id: role._id ? role._id.toString() : role.id,
@@ -396,11 +365,7 @@ export class UserService {
       }
     }
 
-    const user = await UserModel.findByIdAndUpdate(
-      id,
-      { $set: data },
-      { returnDocument: 'after', runValidators: true }
-    ).select('-password');
+    const user = await UserModel.findByIdAndUpdate(id, { $set: data }, { returnDocument: 'after', runValidators: true }).select('-password');
 
     if (!user) {
       throw new Error('用户不存在');

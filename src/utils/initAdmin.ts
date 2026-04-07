@@ -1,8 +1,8 @@
 // src/utils/initAdmin.ts
-import { DeptModel } from '../models/dept/dept.js';
-import { RoleModel } from '../models/role/role.js';
-import { UserRoleModel } from '../models/userRole/userRole.js';
-import { UserModel } from '../models/users/users.js';
+import { DeptModel } from '../models/system/dept/dept.js';
+import { RoleModel } from '../models/system/role/role.js';
+import { UserRoleModel } from '../models/system/userRole/userRole.js';
+import { UserModel } from '../models/system/users/users.js';
 
 import { logger } from './logger.js';
 

@@ -1,7 +1,7 @@
 // src/routes/captcha.routes.ts
 import { Router } from 'express';
 
-import captchaController from '@/controller/modules/captcha/captcha';
+import captchaController from '@/controller/modules/system/captcha/captcha';
 import { RateLimiterUtil } from '@/utils/rateLimiter.ts';
 
 const router = Router();

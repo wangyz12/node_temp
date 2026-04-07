@@ -1,7 +1,6 @@
 import { UserModel } from '@/models/index.ts';
-import { UserRoleModel } from '@/models/userRole/userRole.ts';
-import { RoleModel } from '@/models/role/role.ts';
-import { IUser } from '@/models/users/users.ts';
+import { UserRoleModel } from '@/models/system/userRole/userRole.ts';
+import { IUser } from '@/models/system/users/users.ts';
 import { DEFAULT_ROLE } from '@/constants/roles.ts';
 import { jwtUtil } from './jwt.ts';
 
@@ -11,14 +10,12 @@ import { jwtUtil } from './jwt.ts';
 async function getUserPrimaryRole(userId: string): Promise<string> {
   try {
     // 查找用户的角色关联
-    const userRole = await UserRoleModel.findOne({ userId })
-      .populate('roleId', 'name')
-      .sort({ createdAt: 1 }); // 按创建时间排序，取第一个
-    
+    const userRole = await UserRoleModel.findOne({ userId }).populate('roleId', 'name').sort({ createdAt: 1 }); // 按创建时间排序，取第一个
+
     if (userRole && (userRole.roleId as any)?.name) {
       return (userRole.roleId as any).name;
     }
-    
+
     return DEFAULT_ROLE;
   } catch (error) {
     console.error('获取用户角色失败:', error);

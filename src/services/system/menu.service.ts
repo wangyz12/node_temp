@@ -1,5 +1,5 @@
 // src/services/menu.service.ts
-import { MenuModel } from '@/models/menu/menu';
+import { MenuModel } from '@/models/system/menu/menu';
 
 export class MenuService {
   /**
@@ -7,7 +7,7 @@ export class MenuService {
    */
   async getMenuTree(query: any = {}) {
     const { type } = query;
-    
+
     // 获取完整菜单树
     let menuTree = await MenuModel.getFullTree();
 
@@ -46,7 +46,7 @@ export class MenuService {
    */
   async createMenu(data: any) {
     const { name, path, component, title, icon, sort, pid, type, hidden, cache, permissions, external, target } = data;
-    
+
     // 基础验证
     if (!name || !path || !component || !title) {
       throw new Error('缺少必填字段：name、path、component、title 不能为空');
@@ -100,7 +100,7 @@ export class MenuService {
    */
   async updateMenu(id: string, data: any) {
     const { name, path, component, title } = data;
-    
+
     if (!name || !path || !component || !title) {
       throw new Error('缺少必填字段：name、path、component、title 不能为空');
     }
@@ -115,7 +115,7 @@ export class MenuService {
     if (!result) {
       throw new Error('菜单不存在');
     }
-    
+
     return result;
   }
 
@@ -134,7 +134,7 @@ export class MenuService {
     if (!result) {
       throw new Error('菜单不存在');
     }
-    
+
     return result;
   }
 
@@ -162,11 +162,11 @@ export class MenuService {
       {
         $group: {
           _id: '$type',
-          count: { $sum: 1 }
-        }
-      }
+          count: { $sum: 1 },
+        },
+      },
     ]);
-    
+
     return stats.reduce((acc, stat) => {
       acc[stat._id] = stat.count;
       return acc;

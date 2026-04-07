@@ -13,7 +13,7 @@
  * @module UserRoleController
  */
 
-import { UserRoleService } from '@/services/userRole.service.ts';
+import { UserRoleService } from '@/services/system/userRole.service';
 import type { ExpressRequest, ExpressResponse } from '@/types/express';
 import { handleError, successResponse, checkAuth, checkRequiredParams, checkArrayParam } from '@/utils/errorHandler.ts';
 

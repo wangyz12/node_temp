@@ -7,13 +7,13 @@
 import mongoose from 'mongoose';
 
 import { computedEnv as env } from '@/config/env.ts';
-import { DeptModel } from '@/models/dept/dept.ts';
-import { MenuModel } from '@/models/menu/menu.ts';
-import { RoleModel } from '@/models/role/role.ts';
-import { RoleDeptModel } from '@/models/roleDept/roleDept.ts';
-import { RoleMenuModel } from '@/models/roleMenu/roleMenu.ts';
-import { UserRoleModel } from '@/models/userRole/userRole.ts';
-import { UserModel } from '@/models/users/users.ts';
+import { DeptModel } from '@/models/system/dept/dept';
+import { MenuModel } from '@/models/system/menu/menu';
+import { RoleModel } from '@/models/system/role/role';
+import { RoleDeptModel } from '@/models/system/roleDept/roleDept';
+import { RoleMenuModel } from '@/models/system/roleMenu/roleMenu';
+import { UserRoleModel } from '@/models/system/userRole/userRole';
+import { UserModel } from '@/models/system/users/users';
 
 import 'dotenv/config';
 

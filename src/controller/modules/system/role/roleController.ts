@@ -13,7 +13,7 @@
  * @module RoleController
  */
 
-import { RoleService } from '@/services/role.service';
+import { RoleService } from '@/services/system/role.service';
 import type { ExpressRequest, ExpressResponse } from '@/types/express';
 import { handleError, successResponse, createdResponse, checkAuth, checkRequiredParams, checkArrayParam } from '@/utils/errorHandler';
 
