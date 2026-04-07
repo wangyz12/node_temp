@@ -12,7 +12,7 @@ import { RateLimiterUtil } from '@/utils/rateLimiter.ts';
 import { computedEnv as env } from './config/env.ts';
 import { SecurityConfig } from './config/security.ts';
 import router from './routes/index.ts'
-import { OK, CREATED, NO_CONTENT, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, TOO_MANY_REQUESTS, INTERNAL_SERVER_ERROR, NOT_IMPLEMENTED, BAD_GATEWAY, SERVICE_UNAVAILABLE } from '@/constants/httpStatus';
+import { OK, NOT_FOUND, INTERNAL_SERVER_ERROR } from '@/constants/httpStatus';
 import './utils/global.ts';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -29,7 +29,7 @@ console.log(`🚪 端口: ${process.env.PORT || 3000}`);
 const app: Express = express();
 
 // ==================== 1. 健康检查（必须最前面） ====================
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.status(OK).json({
     status: 'OK',
     timestamp: new Date().toISOString(),
@@ -76,7 +76,7 @@ app.use('*', (req, res) => {
 });
 
 // ==================== 10. 错误处理 ====================
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   console.error('❌ 服务器错误:', err.stack);
   res.status(INTERNAL_SERVER_ERROR).json({ code: INTERNAL_SERVER_ERROR, message: '服务器内部错误' });
 });

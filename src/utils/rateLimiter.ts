@@ -1,8 +1,8 @@
 // src/utils/rateLimiter.ts - 简化版
 import { rateLimit } from 'express-rate-limit';
 
-import { logger } from '@/utils/logger.js'
-import { OK, CREATED, NO_CONTENT, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, TOO_MANY_REQUESTS, INTERNAL_SERVER_ERROR, NOT_IMPLEMENTED, BAD_GATEWAY, SERVICE_UNAVAILABLE } from '@/constants/httpStatus';
+import { logger } from '@/utils/logger.js';
+import { TOO_MANY_REQUESTS } from '@/constants/httpStatus';
 
 export class RateLimiterUtil {
   /**

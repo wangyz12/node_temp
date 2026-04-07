@@ -55,7 +55,7 @@ const roleSchema = new Schema<IRole>(
   {
     timestamps: true,
     toJSON: {
-      transform: function (doc, ret: any) {
+      transform: function (_doc, ret: any) {
         delete ret.__v;
         if (ret._id) {
           ret.id = ret._id.toString();

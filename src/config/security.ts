@@ -5,8 +5,7 @@ import helmet from 'helmet';
 import xss from 'xss';
 
 // import cors from 'cors';
-import { computedEnv as env } from './env.ts'
-import { OK, CREATED, NO_CONTENT, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, TOO_MANY_REQUESTS, INTERNAL_SERVER_ERROR, NOT_IMPLEMENTED, BAD_GATEWAY, SERVICE_UNAVAILABLE } from '@/constants/httpStatus';
+
 
 /**
  * 通用安全配置
@@ -90,7 +89,7 @@ export class SecurityConfig {
   /**
    * 6. XSS过滤中间件
    */
-  static xssMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  static xssMiddleware = (req: Request, _res: Response, next: NextFunction) => {
     const filterXSS = (input: any): any => {
       if (typeof input === 'string') {
         return xss(input, {
@@ -130,7 +129,7 @@ export class SecurityConfig {
   /**
    * 8. 防点击劫持
    */
-  static frameguard = (req: Request, res: Response, next: NextFunction) => {
+  static frameguard = (_req: Request, res: Response, next: NextFunction) => {
     res.setHeader('X-Frame-Options', 'DENY');
     next();
   };
@@ -138,7 +137,7 @@ export class SecurityConfig {
   /**
    * 9. 禁用服务器信息
    */
-  static hideServerInfo = (req: Request, res: Response, next: NextFunction) => {
+  static hideServerInfo = (_req: Request, res: Response, next: NextFunction) => {
     res.removeHeader('X-Powered-By');
     next();
   };

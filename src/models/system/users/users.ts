@@ -97,7 +97,7 @@ const userSchema = new Schema<IUser>(
     timestamps: true,
     // 确保toJSON转换删除敏感字段
     toJSON: {
-      transform: function (doc, ret: any) {
+      transform: function (_doc, ret: any) {
         // 删除密码和其他敏感字段
         delete ret.password;
         delete ret.tokenVersion;
@@ -114,7 +114,7 @@ const userSchema = new Schema<IUser>(
     },
     // 确保toObject转换也删除敏感字段
     toObject: {
-      transform: function (doc, ret: any) {
+      transform: function (_doc, ret: any) {
         delete ret.password;
         delete ret.tokenVersion;
         delete ret.__v;

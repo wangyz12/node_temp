@@ -3,10 +3,8 @@ import { Types } from 'mongoose';
 
 import { UserModel } from '@/models/system/users/users';
 import { UserRoleModel } from '@/models/system/userRole/userRole';
-import { RoleModel } from '@/models/system/role/role';
 import { CaptchaUtil } from '@/utils/captcha.ts';
 import { generateUserToken, generateUserTokenFromExisting } from '@/utils/userToken.ts';
-import { DEFAULT_ROLE } from '@/constants/roles.ts';
 import { DEFAULT_STATUS } from '@/constants/userStatus.ts';
 
 // 允许修改的字段常量（管理员可以修改的字段）
@@ -278,7 +276,7 @@ export class UserService {
   }
 
   /**
-   * 获取用户列表（带数据权限过滤）
+   * 获取用户列表（带数据权限过滤 - 强化版）
    */
   async getUserList(query: any, dataScope?: any) {
     const { page = 1, limit = 10, keyword, deptId } = query;
@@ -292,15 +290,22 @@ export class UserService {
       conditions.$or = [{ account: new RegExp(keyword, 'i') }, { username: new RegExp(keyword, 'i') }, { phone: new RegExp(keyword, 'i') }];
     }
 
-    // 2. 指定部门查询
+    // 2. 指定部门查询（用户主动筛选）
     if (deptId) {
       conditions.deptId = new Types.ObjectId(deptId);
     }
 
-    // 3. 数据权限过滤
-    if (dataScope?.deptIds?.length > 0) {
+    // 3. 数据权限过滤（使用新的filter机制）
+    if (dataScope?.filter && Object.keys(dataScope.filter).length > 0) {
+      // 使用自动构建的过滤器
+      Object.assign(conditions, dataScope.filter);
+    } else if (dataScope?.deptIds?.length > 0) {
+      // 兼容旧版本：使用deptIds
       conditions.deptId = { $in: dataScope.deptIds.map((id: any) => new Types.ObjectId(id)) };
     }
+
+    // 4. 排除已删除的用户
+    conditions.delFlag = { $ne: '1' };
 
     // 查询总数
     const total = await UserModel.countDocuments(conditions);

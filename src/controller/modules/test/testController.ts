@@ -87,7 +87,7 @@ const getTestUsers = async (req: ExpressRequest, res: ExpressResponse) => {
  * @route GET /api/test/health
  * @returns {object} 服务状态
  */
-const healthCheck = async (req: ExpressRequest, res: ExpressResponse) => {
+const healthCheck = async (_req: ExpressRequest, res: ExpressResponse) => {
   try {
     successResponse(res, {
       status: 'healthy',
@@ -105,7 +105,7 @@ const healthCheck = async (req: ExpressRequest, res: ExpressResponse) => {
  * @route GET /api/test/performance
  * @returns {object} 性能测试结果
  */
-const performanceTest = async (req: ExpressRequest, res: ExpressResponse) => {
+const performanceTest = async (_req: ExpressRequest, res: ExpressResponse) => {
   try {
     const startTime = Date.now();
     

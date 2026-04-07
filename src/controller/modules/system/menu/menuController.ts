@@ -42,7 +42,7 @@ const getMenuTree = async (req: ExpressRequest, res: ExpressResponse) => {
  * @header Authorization Bearer {token}
  * @returns {object} 所有菜单列表
  */
-const getAllMenus = async (req: ExpressRequest, res: ExpressResponse) => {
+const getAllMenus = async (_req: ExpressRequest, res: ExpressResponse) => {
   try {
     const menus = await menuService.getAllMenus();
     successResponse(res, menus, '获取成功');
@@ -165,7 +165,7 @@ const checkMenuExists = async (req: ExpressRequest, res: ExpressResponse) => {
  * @header Authorization Bearer {token}
  * @returns {object} 菜单类型统计
  */
-const getMenuTypeStats = async (req: ExpressRequest, res: ExpressResponse) => {
+const getMenuTypeStats = async (_req: ExpressRequest, res: ExpressResponse) => {
   try {
     const stats = await menuService.getMenuTypeStats();
     successResponse(res, stats, '获取成功');

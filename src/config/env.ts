@@ -1,5 +1,5 @@
 // src/config/env.ts
-import { cleanEnv, port, str, num, url, bool, makeValidator } from 'envalid';
+import { cleanEnv, port, str, num, bool, makeValidator } from 'envalid';
 
 // 自定义验证器：验证逗号分隔的字符串数组
 const commaSeparatedArray = makeValidator<string[]>((input) => {

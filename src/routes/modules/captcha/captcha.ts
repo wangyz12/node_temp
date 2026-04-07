@@ -2,7 +2,6 @@
 import { Router } from 'express';
 
 import captchaController from '@/controller/modules/system/captcha/captcha';
-import { RateLimiterUtil } from '@/utils/rateLimiter.ts';
 
 const router = Router();
 

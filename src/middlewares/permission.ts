@@ -16,9 +16,11 @@ export const checkPermission = (permission: string) => {
         return res.status(UNAUTHORIZED).json({ code: UNAUTHORIZED, msg: '请先登录' });
       }
 
-      // 检查用户是否是超级管理员（拥有admin角色）
+      // 检查用户是否是超级管理员（拥有admin或super_admin角色）
       const userRoles = await userRoleService.getUserRoles(userId);
-      const isSuperAdmin = userRoles.some((role: any) => role.name === 'admin');
+      const isSuperAdmin = userRoles.some((role: any) => 
+        role.name === 'admin' || role.name === 'super_admin'
+      );
 
       // 如果是超级管理员，跳过权限检查
       if (isSuperAdmin) {
@@ -111,7 +113,7 @@ export const checkRole = (roleNames: string | string[]) => {
  * 获取用户权限信息中间件
  * 将用户权限信息挂载到请求对象上
  */
-export const userPermissions = async (req: ExpressRequest, res: ExpressResponse, next: Function) => {
+export const userPermissions = async (req: ExpressRequest, _res: ExpressResponse, next: Function) => {
   try {
     const userId = req.user?.userId;
     if (!userId) {

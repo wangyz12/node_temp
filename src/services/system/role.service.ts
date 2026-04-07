@@ -10,9 +10,9 @@ import { createAppError } from '@/utils/errorHandler.ts';
 
 export class RoleService {
   /**
-   * 获取角色列表
+   * 获取角色列表（带数据权限过滤）
    */
-  async getRoleList(query: any) {
+  async getRoleList(query: any, dataScope?: any) {
     const { page = 1, limit = 10, keyword, status } = query;
     const skip = (Number(page) - 1) * Number(limit);
 
@@ -25,6 +25,15 @@ export class RoleService {
 
     if (status !== undefined && status !== '') {
       conditions.status = status;
+    }
+
+    // 数据权限过滤：角色通常不需要部门级别的数据权限
+    // 但可以添加基于创建人的权限控制
+    if (dataScope?.filter && Object.keys(dataScope.filter).length > 0) {
+      // 如果过滤器中有createdBy条件，应用到角色查询
+      if (dataScope.filter.createdBy) {
+        conditions.createdBy = dataScope.filter.createdBy;
+      }
     }
 
     // 查询总数

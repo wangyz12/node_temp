@@ -13,11 +13,9 @@
  * @module DeptController
  */
 
-import { DeptService } from '@/services/system/dept.service';
+import deptService from '@/services/system/dept.service';
 import type { ExpressRequest, ExpressResponse } from '@/types/express';
 import { handleError, successResponse, createdResponse, checkRequiredParams } from '@/utils/errorHandler';
-
-const deptService = new DeptService();
 
 // ==================== 控制器方法 ====================
 
@@ -127,7 +125,7 @@ const deleteDept = async (req: ExpressRequest, res: ExpressResponse) => {
  * @header Authorization Bearer {token}
  * @returns {object} 所有部门列表
  */
-const getAllDepts = async (req: ExpressRequest, res: ExpressResponse) => {
+const getAllDepts = async (_req: ExpressRequest, res: ExpressResponse) => {
   try {
     const depts = await deptService.getAllDepts();
     successResponse(res, depts, '获取成功');
@@ -142,7 +140,7 @@ const getAllDepts = async (req: ExpressRequest, res: ExpressResponse) => {
  * @header Authorization Bearer {token}
  * @returns {object} 各部门用户数量统计
  */
-const getDeptUserStats = async (req: ExpressRequest, res: ExpressResponse) => {
+const getDeptUserStats = async (_req: ExpressRequest, res: ExpressResponse) => {
   try {
     const stats = await deptService.getDeptUserStats();
     successResponse(res, stats, '获取成功');

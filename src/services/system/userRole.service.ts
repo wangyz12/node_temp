@@ -1,7 +1,6 @@
 // src/services/userRole.service.ts
 import mongoose, { Types } from 'mongoose';
 
-import { DeptModel } from '@/models/system/dept/dept';
 import { MenuModel } from '@/models/system/menu/menu';
 import { RoleModel } from '@/models/system/role/role';
 import { RoleDeptModel } from '@/models/system/roleDept/roleDept';
@@ -218,77 +217,105 @@ export class UserRoleService {
   }
 
   /**
-   * 获取用户的数据权限范围
+   * 获取用户的数据权限范围（强化版）
    */
-  async getUserDataScope(userId: string): Promise<{ deptIds: string[]; dataScope: string }> {
-    // 获取用户的角色ID
-    const userRoles = await UserRoleModel.find({ userId });
-    const roleIds = userRoles.map((ur) => ur.roleId);
+  async getUserDataScope(userId: string): Promise<{
+    deptIds: string[];
+    dataScope: string;
+    filter?: any; // 新增：自动构建的查询过滤器
+  }> {
+    try {
+      // 获取用户的所有角色（包含角色详情）
+      const userRoles = await UserRoleModel.find({ userId })
+        .populate({
+          path: 'roleId',
+          select: 'dataScope',
+          match: { delFlag: '0', status: '0' },
+        })
+        .lean();
 
-    if (roleIds.length === 0) {
-      return { deptIds: [], dataScope: '5' }; // 默认无数据权限
-    }
+      // 过滤掉无效角色
+      const validRoles = userRoles.filter((ur) => ur.roleId);
 
-    // 获取角色信息
-    const roles = await RoleModel.find({ _id: { $in: roleIds }, delFlag: '0', status: '0' })
-      .select('dataScope')
-      .lean();
-
-    if (roles.length === 0) {
-      return { deptIds: [], dataScope: '5' };
-    }
-
-    // 取最高数据权限（数字越小权限越大）
-    const dataScope = Math.min(...roles.map((r) => parseInt(r.dataScope || '5')).filter((n) => !isNaN(n))).toString();
-
-    // 根据数据权限获取部门ID
-    let deptIds: string[] = [];
-    const user = await UserModel.findById(userId).select('deptId');
-    const userDeptId: any = user?.deptId;
-
-    if (dataScope === '1') {
-      // 全部数据权限
-      const allDepts = await DeptModel.find({ delFlag: '0', status: '0' }).select('_id');
-      deptIds = allDepts.map((d) => d._id.toString());
-    } else if (dataScope === '2') {
-      // 本部门及以下数据权限
-      if (userDeptId) {
-        const deptAndChildren = await this.getDeptAndChildren(userDeptId);
-        deptIds = deptAndChildren.map((d) => d._id.toString());
+      if (validRoles.length === 0) {
+        return {
+          deptIds: [],
+          dataScope: '5',
+          filter: { createdBy: userId }, // 仅本人权限的过滤器
+        };
       }
-    } else if (dataScope === '3') {
-      // 本部门数据权限
-      if (userDeptId) {
-        deptIds = [userDeptId];
+
+      // 获取所有角色的数据权限等级
+      const roleDataScopes = validRoles.map((ur) => parseInt((ur.roleId as any).dataScope || '5')).filter((n) => !isNaN(n));
+
+      // 取最高数据权限（数字越小权限越大）
+      const dataScope = Math.min(...roleDataScopes).toString();
+
+      // 获取用户信息（包含部门）
+      const user = await UserModel.findById(userId).select('deptId').lean();
+      const userDeptId: any = user?.deptId?.toString();
+
+      let deptIds: string[] = [];
+      let filter: any = {};
+
+      // 根据权限等级处理
+      switch (dataScope) {
+        case '1': // 全部数据权限
+          // 返回空数组，表示不需要部门过滤
+          filter = {}; // 空过滤器表示不过滤
+          break;
+
+        case '2': // 自定义数据权限
+          // 获取用户所有角色关联的部门ID
+          const roleIds = validRoles.map((ur) => (ur.roleId as any)._id.toString());
+          const roleDepts = await RoleDeptModel.find({
+            roleId: { $in: roleIds.map((id) => new Types.ObjectId(id)) },
+          }).lean();
+
+          deptIds = [...new Set(roleDepts.map((rd) => rd.deptId.toString()))];
+          if (deptIds.length > 0) {
+            filter = { deptId: { $in: deptIds.map((id) => new Types.ObjectId(id)) } };
+          }
+          break;
+
+        case '3': // 本部门数据权限
+          if (userDeptId) {
+            deptIds = [userDeptId];
+            filter = { deptId: new Types.ObjectId(userDeptId) };
+          }
+          break;
+
+        case '4': // 本部门及以下数据权限
+          if (userDeptId) {
+            // 导入部门服务
+            const deptService = await import('./dept.service.ts').then((m: any) => m.default);
+            deptIds = await deptService.getChildrenDepts(userDeptId);
+            if (deptIds.length > 0) {
+              filter = { deptId: { $in: deptIds.map((id) => new Types.ObjectId(id)) } };
+            }
+          }
+          break;
+
+        case '5': // 仅本人数据权限
+        default:
+          filter = { createdBy: userId };
+          break;
       }
-    } else if (dataScope === '4') {
-      // 自定义数据权限
-      const roleDepts = await RoleDeptModel.find({ roleId: { $in: roleIds } });
-      deptIds = [...new Set(roleDepts.map((rd) => rd.deptId.toString()))];
+
+      return {
+        deptIds,
+        dataScope,
+        filter,
+      };
+    } catch (error) {
+      console.error('获取用户数据权限失败:', error);
+      // 出错时返回最严格的权限
+      return {
+        deptIds: [],
+        dataScope: '5',
+        filter: { createdBy: userId },
+      };
     }
-    // dataScope === '5' 仅本人数据权限，deptIds为空
-
-    return { deptIds, dataScope };
-  }
-
-  /**
-   * 递归获取部门及其所有子部门
-   */
-  private async getDeptAndChildren(deptId: string): Promise<any[]> {
-    const dept = await DeptModel.findById(deptId);
-    if (!dept) {
-      return [];
-    }
-
-    const result = [dept];
-    const children = await DeptModel.find({ parentId: deptId, delFlag: '0', status: '0' });
-
-    for (const child of children) {
-      const grandchildren = await this.getDeptAndChildren(child._id.toString());
-      result.push(...grandchildren);
-    }
-
-    return result;
   }
 
   /**

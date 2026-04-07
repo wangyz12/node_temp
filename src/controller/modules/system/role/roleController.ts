@@ -15,7 +15,7 @@
 
 import { RoleService } from '@/services/system/role.service';
 import type { ExpressRequest, ExpressResponse } from '@/types/express';
-import { handleError, successResponse, createdResponse, checkAuth, checkRequiredParams, checkArrayParam } from '@/utils/errorHandler';
+import { handleError, successResponse, createdResponse, checkRequiredParams, checkArrayParam } from '@/utils/errorHandler';
 
 const roleService = new RoleService();
 
@@ -127,7 +127,7 @@ const deleteRole = async (req: ExpressRequest, res: ExpressResponse) => {
  * @header Authorization Bearer {token}
  * @returns {object} 所有角色列表
  */
-const getAllRoles = async (req: ExpressRequest, res: ExpressResponse) => {
+const getAllRoles = async (_req: ExpressRequest, res: ExpressResponse) => {
   try {
     const roles = await roleService.getAllRoles();
     successResponse(res, roles, '获取成功');
@@ -142,7 +142,7 @@ const getAllRoles = async (req: ExpressRequest, res: ExpressResponse) => {
  * @header Authorization Bearer {token}
  * @returns {object} 菜单树结构
  */
-const getRoleMenuTree = async (req: ExpressRequest, res: ExpressResponse) => {
+const getRoleMenuTree = async (_req: ExpressRequest, res: ExpressResponse) => {
   try {
     const menuTree = await roleService.getRoleMenuTree();
     successResponse(res, menuTree, '获取成功');
@@ -157,7 +157,7 @@ const getRoleMenuTree = async (req: ExpressRequest, res: ExpressResponse) => {
  * @header Authorization Bearer {token}
  * @returns {object} 部门树结构
  */
-const getRoleDeptTree = async (req: ExpressRequest, res: ExpressResponse) => {
+const getRoleDeptTree = async (_req: ExpressRequest, res: ExpressResponse) => {
   try {
     const deptTree = await roleService.getRoleDeptTree();
     successResponse(res, deptTree, '获取成功');
