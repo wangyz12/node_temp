@@ -123,6 +123,21 @@ export class CaptchaUtil {
       background: '#f0f0f0',
       width: 120,
       height: 40,
+      // 添加字符颜色配置
+      fontSize: 50,
+      charPreset: 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789',
+    });
+
+    // 替换生成的 SVG 中的浅色字符颜色
+    let svgText = captcha.data;
+    // 将浅色字符（如 #ccc、#ddd、#eee 等）替换为深色 #333
+    svgText = svgText.replace(/fill="#[cde][cde][cde]"/gi, 'fill="#333333"');
+    svgText = svgText.replace(/fill="#[a-f0-9]{3}"/gi, (match) => {
+      // 如果是浅色，替换为深色
+      if (match.match(/[cde]/i)) {
+        return 'fill="#333333"';
+      }
+      return match;
     });
 
     const uuid = uuidv4();
@@ -130,13 +145,13 @@ export class CaptchaUtil {
 
     captchaStore.set(uuid, {
       value: captcha.text.toLowerCase(),
-      expires: now + 5 * 60 * 1000, // 5分钟过期
+      expires: now + 5 * 60 * 1000,
       createdAt: now,
     });
 
     return {
       uuid,
-      image: captcha.data,
+      image: svgText, // 返回修改后的 SVG
     };
   }
 
@@ -244,13 +259,13 @@ export class CaptchaUtil {
     if (!captcha) {
       return false;
     }
-    
+
     // 检查是否过期
     if (captcha.expires < Date.now()) {
       captchaStore.delete(uuid);
       return false;
     }
-    
+
     return true;
   }
 
@@ -262,13 +277,13 @@ export class CaptchaUtil {
     if (!captcha) {
       return 0;
     }
-    
+
     const now = Date.now();
     if (captcha.expires < now) {
       captchaStore.delete(uuid);
       return 0;
     }
-    
+
     return captcha.expires - now;
   }
 }
