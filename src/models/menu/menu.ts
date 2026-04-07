@@ -15,6 +15,7 @@ export interface IRoute extends Document {
   permission?: string; // 所需权限标识
   external?: boolean; // 时候外联
   target?: '_blank' | '_self'; // 外联打开方式
+  status: '0' | '1'; // 状态（0正常 1停用）
   createAt: Date;
   updateAt: Date;
   children?: IRoute[]; // 虚拟字段 (用于树形结构)
@@ -100,6 +101,11 @@ const menuSchema = new Schema<IRoute, IRouteModel>(
       type: String,
       enum: ['_blank', '_self'],
       default: '_self',
+    },
+    status: {
+      type: String,
+      enum: ['0', '1'],
+      default: '0',
     },
   },
   {

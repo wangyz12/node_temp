@@ -127,7 +127,7 @@ export class UserService {
     }
 
     // 生成token
-    const tokenData = generateUserTokenFromExisting(user);
+    const tokenData = await generateUserTokenFromExisting(user);
 
     return {
       user: tokenData.user,

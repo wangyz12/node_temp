@@ -28,22 +28,22 @@ router.put('/update/:id', checkPermission('system:role:edit'), controller.roleCo
 // 删除角色
 router.delete('/delete/:id', checkPermission('system:role:remove'), controller.roleController.deleteRole);
 
-// 获取角色菜单树
-router.get('/:roleId/menu-tree', checkPermission('system:role:edit'), controller.roleController.getRoleMenuTree);
+// 获取菜单树（通用）
+router.get('/menu-tree', checkPermission('system:role:edit'), controller.roleController.getRoleMenuTree);
 
-// 获取角色部门树
-router.get('/:roleId/dept-tree', checkPermission('system:role:edit'), controller.roleController.getRoleDeptTree);
+// 获取部门树（通用）
+router.get('/dept-tree', checkPermission('system:role:edit'), controller.roleController.getRoleDeptTree);
 
 // 获取角色已分配的菜单ID列表
-router.get('/:roleId/menus', checkPermission('system:role:edit'), controller.roleController.getRoleMenus);
+router.get('/:id/menus', checkPermission('system:role:edit'), controller.roleController.getRoleMenus);
 
 // 获取角色已分配的部门ID列表
-router.get('/:roleId/depts', checkPermission('system:role:edit'), controller.roleController.getRoleDepts);
+router.get('/:id/depts', checkPermission('system:role:edit'), controller.roleController.getRoleDepts);
 
 // 分配角色菜单权限
-router.post('/:roleId/assign-menus', checkPermission('system:role:edit'), controller.roleController.assignRoleMenus);
+router.post('/:id/assign-menus', checkPermission('system:role:edit'), controller.roleController.assignRoleMenus);
 
 // 分配角色部门权限
-router.post('/:roleId/assign-depts', checkPermission('system:role:edit'), controller.roleController.assignRoleDepts);
+router.post('/:id/assign-depts', checkPermission('system:role:edit'), controller.roleController.assignRoleDepts);
 
 export default router;

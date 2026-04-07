@@ -65,6 +65,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 添加调试日志，确认路由是否正确挂载
 console.log('✅ 路由注册开始...');
 console.log('API_PREFIX:', env.API_PREFIX);
+console.log('Router imported:', router ? 'Yes' : 'No');
 app.use(env.API_PREFIX, router);
 console.log('✅ 路由注册完成');
 

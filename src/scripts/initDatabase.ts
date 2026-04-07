@@ -119,9 +119,9 @@ async function initEnhancedDatabase() {
 
     // 创建顶级菜单
     const topLevelMenus = [
-      { name: 'dashboard', path: '/dashboard', component: 'dashboard/index', title: '仪表盘', icon: 'dashboard', sort: 0, type: 'menu', hidden: false, cache: true, perms: 'dashboard:view' },
-      { name: 'system', path: '/system', component: 'Layout', title: '系统管理', icon: 'system', sort: 1, type: 'menu', hidden: false, cache: true, perms: 'system:manage' },
-      { name: 'business', path: '/business', component: 'Layout', title: '业务管理', icon: 'business', sort: 2, type: 'menu', hidden: false, cache: true, perms: 'business:manage' },
+      { name: 'home', path: '/home', component: 'home/index', title: '首页', icon: 'home', sort: 0, type: 'menu', hidden: false, cache: true, permission: 'home:view', status: '0' },
+      { name: 'system', path: '/system', component: 'Layout', title: '系统管理', icon: 'system', sort: 1, type: 'menu', hidden: false, cache: true, permission: 'system:manage', status: '0' },
+      { name: 'business', path: '/business', component: 'Layout', title: '业务管理', icon: 'business', sort: 2, type: 'menu', hidden: false, cache: true, permission: 'business:manage', status: '0' },
     ];
 
     for (const menu of topLevelMenus) {
@@ -138,10 +138,58 @@ async function initEnhancedDatabase() {
 
     // 创建系统管理子菜单
     const systemMenus = [
-      { name: 'user', path: '/system/user', component: 'system/user/index', title: '用户管理', icon: 'user', sort: 10, type: 'menu', hidden: false, cache: true, perms: 'system:user:list,system:user:add,system:user:edit,system:user:delete,system:user:export' },
-      { name: 'role', path: '/system/role', component: 'system/role/index', title: '角色管理', icon: 'peoples', sort: 20, type: 'menu', hidden: false, cache: true, perms: 'system:role:list,system:role:add,system:role:edit,system:role:delete,system:role:export' },
-      { name: 'menu', path: '/system/menu', component: 'system/menu/index', title: '菜单管理', icon: 'tree-table', sort: 30, type: 'menu', hidden: false, cache: true, perms: 'system:menu:list,system:menu:add,system:menu:edit,system:menu:delete' },
-      { name: 'dept', path: '/system/dept', component: 'system/dept/index', title: '部门管理', icon: 'tree', sort: 40, type: 'menu', hidden: false, cache: true, perms: 'system:dept:list,system:dept:add,system:dept:edit,system:dept:delete,system:dept:export' },
+      {
+        name: 'user',
+        path: '/system/user',
+        component: 'system/user/index',
+        title: '用户管理',
+        icon: 'user',
+        sort: 10,
+        type: 'menu',
+        hidden: false,
+        cache: true,
+        permission: 'system:user:list,system:user:add,system:user:edit,system:user:delete,system:user:export',
+        status: '0',
+      },
+      {
+        name: 'role',
+        path: '/system/role',
+        component: 'system/role/index',
+        title: '角色管理',
+        icon: 'peoples',
+        sort: 20,
+        type: 'menu',
+        hidden: false,
+        cache: true,
+        permission: 'system:role:list,system:role:add,system:role:edit,system:role:delete,system:role:export',
+        status: '0',
+      },
+      {
+        name: 'menu',
+        path: '/system/menu',
+        component: 'system/menu/index',
+        title: '菜单管理',
+        icon: 'tree-table',
+        sort: 30,
+        type: 'menu',
+        hidden: false,
+        cache: true,
+        permission: 'system:menu:list,system:menu:add,system:menu:edit,system:menu:delete',
+        status: '0',
+      },
+      {
+        name: 'dept',
+        path: '/system/dept',
+        component: 'system/dept/index',
+        title: '部门管理',
+        icon: 'tree',
+        sort: 40,
+        type: 'menu',
+        hidden: false,
+        cache: true,
+        permission: 'system:dept:list,system:dept:add,system:dept:edit,system:dept:delete,system:dept:export',
+        status: '0',
+      },
     ];
 
     const systemMenuId = menuMap.get('system');
@@ -172,8 +220,21 @@ async function initEnhancedDatabase() {
         hidden: false,
         cache: true,
         permission: 'business:project:list',
+        status: '0',
       },
-      { name: 'task', path: '/business/task', component: 'business/task/index', title: '任务管理', icon: 'task', sort: 20, type: 'menu', hidden: false, cache: true, permission: 'business:task:list' },
+      {
+        name: 'task',
+        path: '/business/task',
+        component: 'business/task/index',
+        title: '任务管理',
+        icon: 'task',
+        sort: 20,
+        type: 'menu',
+        hidden: false,
+        cache: true,
+        permission: 'business:task:list',
+        status: '0',
+      },
     ];
 
     const businessMenuId = menuMap.get('business');
@@ -193,17 +254,6 @@ async function initEnhancedDatabase() {
 
     console.log('✅ 菜单创建完成');
 
-    // 确保所有菜单都有status字段且为'0'
-    console.log('\n🔧 确保菜单状态正确...');
-    const allMenus: any = await MenuModel.find({});
-    for (const menu of allMenus) {
-      if (!menu.status || menu.status !== '0') {
-        menu.status = '0';
-        await menu.save();
-        console.log(`   ✅ 设置菜单状态: ${menu.name} -> '0'`);
-      }
-    }
-
     // ==================== 4. 分配菜单权限 ====================
     console.log('\n🔐 4. 分配菜单权限...');
 
@@ -217,20 +267,20 @@ async function initEnhancedDatabase() {
     const adminMenuIds = [
       ...(systemMenus.map((m) => menuMap.get(m.name)).filter(Boolean) as mongoose.Types.ObjectId[]),
       ...(businessMenus.map((m) => menuMap.get(m.name)).filter(Boolean) as mongoose.Types.ObjectId[]),
-      menuMap.get('dashboard')!,
+      menuMap.get('home')!,
     ];
     await assignMenusToRole(roleMap.get('admin')!, adminMenuIds, '管理员');
 
     // 部门主管：业务管理 + 部分系统管理
-    const managerMenuIds = [menuMap.get('dashboard')!, menuMap.get('user')!, menuMap.get('project')!, menuMap.get('task')!].filter(Boolean) as mongoose.Types.ObjectId[];
+    const managerMenuIds = [menuMap.get('home')!, menuMap.get('user')!, menuMap.get('project')!, menuMap.get('task')!].filter(Boolean) as mongoose.Types.ObjectId[];
     await assignMenusToRole(roleMap.get('dept_manager')!, managerMenuIds, '部门主管');
 
     // 开发人员：业务管理相关
-    const devMenuIds = [menuMap.get('dashboard')!, menuMap.get('project')!, menuMap.get('task')!].filter(Boolean) as mongoose.Types.ObjectId[];
+    const devMenuIds = [menuMap.get('home')!, menuMap.get('project')!, menuMap.get('task')!].filter(Boolean) as mongoose.Types.ObjectId[];
     await assignMenusToRole(roleMap.get('developer')!, devMenuIds, '开发人员');
 
     // 普通用户：仅仪表盘
-    const userMenuIds = [menuMap.get('dashboard')!].filter(Boolean) as mongoose.Types.ObjectId[];
+    const userMenuIds = [menuMap.get('home')!].filter(Boolean) as mongoose.Types.ObjectId[];
     await assignMenusToRole(roleMap.get('user')!, userMenuIds, '普通用户');
 
     console.log('✅ 菜单权限分配完成');

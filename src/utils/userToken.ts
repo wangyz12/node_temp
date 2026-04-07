@@ -1,7 +1,30 @@
 import { UserModel } from '@/models/index.ts';
+import { UserRoleModel } from '@/models/userRole/userRole.ts';
+import { RoleModel } from '@/models/role/role.ts';
 import { IUser } from '@/models/users/users.ts';
 import { DEFAULT_ROLE } from '@/constants/roles.ts';
 import { jwtUtil } from './jwt.ts';
+
+/**
+ * 获取用户的主要角色
+ */
+async function getUserPrimaryRole(userId: string): Promise<string> {
+  try {
+    // 查找用户的角色关联
+    const userRole = await UserRoleModel.findOne({ userId })
+      .populate('roleId', 'name')
+      .sort({ createdAt: 1 }); // 按创建时间排序，取第一个
+    
+    if (userRole && (userRole.roleId as any)?.name) {
+      return (userRole.roleId as any).name;
+    }
+    
+    return DEFAULT_ROLE;
+  } catch (error) {
+    console.error('获取用户角色失败:', error);
+    return DEFAULT_ROLE;
+  }
+}
 
 /**
  * 为用户生成 token（并返回不含密码的用户信息）
@@ -9,8 +32,8 @@ import { jwtUtil } from './jwt.ts';
  * @returns 包含用户信息和 token 的对象
  */
 export const generateUserToken = async (user: IUser) => {
-  // 从 user 中获取 userRole（roles 数组的第一个）
-  const userRole = user.roles && Array.isArray(user.roles) && user.roles.length > 0 ? user.roles[0] : DEFAULT_ROLE;
+  // 从关联表中获取用户角色
+  const userRole = await getUserPrimaryRole(user._id.toString());
 
   // 1. 生成 token - 👈 加上 role
   const tokens = jwtUtil.generateTokens({
@@ -34,9 +57,9 @@ export const generateUserToken = async (user: IUser) => {
  * @param user - 已经查询出来的用户对象
  * @returns 包含用户信息和 token 的对象
  */
-export const generateUserTokenFromExisting = (user: IUser) => {
-  // 从 user 中获取 userRole（roles 数组的第一个）
-  const userRole = user.roles && Array.isArray(user.roles) && user.roles.length > 0 ? user.roles[0] : DEFAULT_ROLE;
+export const generateUserTokenFromExisting = async (user: IUser) => {
+  // 从关联表中获取用户角色
+  const userRole = await getUserPrimaryRole(user._id.toString());
 
   // 1. 生成 token - 👈 加上 role
   const tokens = jwtUtil.generateTokens({
