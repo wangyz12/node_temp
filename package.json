@@ -9,9 +9,7 @@
     "start": "node dist/server.js",
     "lint": "eslint src",
     "type-check": "tsc --noEmit --skipLibCheck",
-    "init": "tsx scripts/init.ts",
     "init-db": "node --env-file=.env --import tsx src/scripts/initDatabase.ts",
-    "init-rbac": "tsx src/scripts/initRBAC.ts",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write \"src/**/*.ts\""
   },
