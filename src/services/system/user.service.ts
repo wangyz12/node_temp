@@ -279,22 +279,40 @@ export class UserService {
    * 获取用户列表（带数据权限过滤 - 强化版）
    */
   async getUserList(query: any, dataScope?: any) {
-    const { page = 1, limit = 10, keyword, deptId } = query;
+    const { page = 1, limit = 10, keyword, deptId, status, phone, account, username } = query;
     const skip = (Number(page) - 1) * Number(limit);
 
     // 构建查询条件
     const conditions: any = {};
-
+    // 1. 账号精确查询（新增）
+    if (account && account.trim()) {
+      conditions.account = account.trim();
+    }
+    if (username && username.trim()) {
+      conditions.username = username.trim();
+    }
     // 1. 关键词搜索
     if (keyword) {
       conditions.$or = [{ account: new RegExp(keyword, 'i') }, { username: new RegExp(keyword, 'i') }, { phone: new RegExp(keyword, 'i') }];
     }
-
+    // 2. 手机号精确查询（新增）
+    if (phone && phone.trim()) {
+      conditions.phone = phone.trim();
+    }
     // 2. 指定部门查询（用户主动筛选）
     if (deptId) {
       conditions.deptId = new Types.ObjectId(deptId);
     }
-
+    // 3. 状态查询（新增）
+    if (status !== undefined && status !== null && status !== '') {
+      // 如果 status 是数字，直接使用；如果是字符串，转换为数字
+      const statusNum = typeof status === 'string' ? parseInt(status) : status;
+      if (!isNaN(statusNum)) {
+        conditions.status = statusNum;
+      } else {
+        conditions.status = status;
+      }
+    }
     // 3. 数据权限过滤（使用新的filter机制）
     if (dataScope?.filter && Object.keys(dataScope.filter).length > 0) {
       // 使用自动构建的过滤器
@@ -306,7 +324,7 @@ export class UserService {
 
     // 4. 排除已删除的用户
     conditions.delFlag = { $ne: '1' };
-
+    console.log(conditions, query);
     // 查询总数
     const total = await UserModel.countDocuments(conditions);
 
