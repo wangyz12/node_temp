@@ -21,8 +21,26 @@ export class UserRoleService {
 
     // 检查角色是否存在
     const roles = await RoleModel.find({ _id: { $in: roleIds }, delFlag: '0', status: '0' });
+    console.log('查询到的角色:', roles.map(r => r._id.toString()), '传入的角色ID:', roleIds);
+    
     if (roles.length !== roleIds.length) {
-      throw new Error('部分角色不存在或已停用');
+      // 找出不存在的角色ID
+      const foundRoleIds = roles.map(role => role._id.toString());
+      const missingRoleIds = roleIds.filter(id => !foundRoleIds.includes(id));
+      
+      // 检查这些ID是否存在于数据库中但状态不对
+      const allRoles = await RoleModel.find({ _id: { $in: missingRoleIds } });
+      const inactiveRoles = allRoles.filter(role => role.status !== '0' || role.delFlag !== '0');
+      
+      let errorMessage = '部分角色不存在或已停用';
+      if (missingRoleIds.length > 0) {
+        errorMessage += `。不存在的角色ID: ${missingRoleIds.join(', ')}`;
+      }
+      if (inactiveRoles.length > 0) {
+        errorMessage += `。已停用或删除的角色ID: ${inactiveRoles.map(r => r._id.toString()).join(', ')}`;
+      }
+      
+      throw new Error(errorMessage);
     }
 
     // 删除用户原有的角色关联
@@ -362,13 +380,32 @@ export class UserRoleService {
     // 检查所有用户是否存在
     const users = await UserModel.find({ _id: { $in: userIds } });
     if (users.length !== userIds.length) {
-      throw new Error('部分用户不存在');
+      // 找出不存在的用户ID
+      const foundUserIds = users.map(user => user._id.toString());
+      const missingUserIds = userIds.filter(id => !foundUserIds.includes(id));
+      throw new Error(`部分用户不存在。不存在的用户ID: ${missingUserIds.join(', ')}`);
     }
 
     // 检查角色是否存在
     const roles = await RoleModel.find({ _id: { $in: roleIds }, delFlag: '0', status: '0' });
     if (roles.length !== roleIds.length) {
-      throw new Error('部分角色不存在或已停用');
+      // 找出不存在的角色ID
+      const foundRoleIds = roles.map(role => role._id.toString());
+      const missingRoleIds = roleIds.filter(id => !foundRoleIds.includes(id));
+      
+      // 检查这些ID是否存在于数据库中但状态不对
+      const allRoles = await RoleModel.find({ _id: { $in: missingRoleIds } });
+      const inactiveRoles = allRoles.filter(role => role.status !== '0' || role.delFlag !== '0');
+      
+      let errorMessage = '部分角色不存在或已停用';
+      if (missingRoleIds.length > 0) {
+        errorMessage += `。不存在的角色ID: ${missingRoleIds.join(', ')}`;
+      }
+      if (inactiveRoles.length > 0) {
+        errorMessage += `。已停用或删除的角色ID: ${inactiveRoles.map(r => r._id.toString()).join(', ')}`;
+      }
+      
+      throw new Error(errorMessage);
     }
 
     // 为每个用户分配角色
@@ -394,7 +431,13 @@ export class UserRoleService {
     // 检查角色是否存在
     const role = await RoleModel.findOne({ _id: roleId, delFlag: '0', status: '0' });
     if (!role) {
-      throw new Error('角色不存在或已停用');
+      // 检查角色是否存在但状态不对
+      const inactiveRole = await RoleModel.findById(roleId);
+      if (inactiveRole) {
+        throw new Error(`角色已停用或已删除。角色ID: ${roleId}, 状态: ${inactiveRole.status}, 删除标志: ${inactiveRole.delFlag}`);
+      } else {
+        throw new Error(`角色不存在。角色ID: ${roleId}`);
+      }
     }
 
     // 删除角色关联
@@ -424,7 +467,23 @@ export class UserRoleService {
     if (addRoleIds.length > 0) {
       const addRoles = await RoleModel.find({ _id: { $in: addRoleIds }, delFlag: '0', status: '0' });
       if (addRoles.length !== addRoleIds.length) {
-        throw new Error('部分要添加的角色不存在或已停用');
+        // 找出不存在的角色ID
+        const foundRoleIds = addRoles.map(role => role._id.toString());
+        const missingRoleIds = addRoleIds.filter(id => !foundRoleIds.includes(id));
+        
+        // 检查这些ID是否存在于数据库中但状态不对
+        const allRoles = await RoleModel.find({ _id: { $in: missingRoleIds } });
+        const inactiveRoles = allRoles.filter(role => role.status !== '0' || role.delFlag !== '0');
+        
+        let errorMessage = '部分要添加的角色不存在或已停用';
+        if (missingRoleIds.length > 0) {
+          errorMessage += `。不存在的角色ID: ${missingRoleIds.join(', ')}`;
+        }
+        if (inactiveRoles.length > 0) {
+          errorMessage += `。已停用或删除的角色ID: ${inactiveRoles.map(r => r._id.toString()).join(', ')}`;
+        }
+        
+        throw new Error(errorMessage);
       }
     }
 
@@ -432,7 +491,23 @@ export class UserRoleService {
     if (removeRoleIds.length > 0) {
       const removeRoles = await RoleModel.find({ _id: { $in: removeRoleIds }, delFlag: '0', status: '0' });
       if (removeRoles.length !== removeRoleIds.length) {
-        throw new Error('部分要移除的角色不存在或已停用');
+        // 找出不存在的角色ID
+        const foundRoleIds = removeRoles.map(role => role._id.toString());
+        const missingRoleIds = removeRoleIds.filter(id => !foundRoleIds.includes(id));
+        
+        // 检查这些ID是否存在于数据库中但状态不对
+        const allRoles = await RoleModel.find({ _id: { $in: missingRoleIds } });
+        const inactiveRoles = allRoles.filter(role => role.status !== '0' || role.delFlag !== '0');
+        
+        let errorMessage = '部分要移除的角色不存在或已停用';
+        if (missingRoleIds.length > 0) {
+          errorMessage += `。不存在的角色ID: ${missingRoleIds.join(', ')}`;
+        }
+        if (inactiveRoles.length > 0) {
+          errorMessage += `。已停用或删除的角色ID: ${inactiveRoles.map(r => r._id.toString()).join(', ')}`;
+        }
+        
+        throw new Error(errorMessage);
       }
     }
 

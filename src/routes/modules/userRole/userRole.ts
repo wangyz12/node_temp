@@ -37,4 +37,13 @@ router.get('/current/data-scope', controller.userRoleController.getUserDataScope
 // 检查当前用户是否有某个权限
 router.post('/current/check-permission', controller.userRoleController.checkUserPermission);
 
+// 移除用户的角色
+router.delete('/remove', checkPermission('system:user:edit'), controller.userRoleController.removeUserRole);
+
+// 批量操作用户角色
+router.post('/batch', checkPermission('system:user:edit'), controller.userRoleController.batchUserRoleOperation);
+
+// 检查用户是否拥有指定角色
+router.get('/check', checkPermission('system:user:query'), controller.userRoleController.checkUserRole);
+
 export default router;
