@@ -93,7 +93,8 @@ export class UserRoleService {
   }
 
   /**
-   * 获取用户的菜单权限（基于角色）- 返回树形结构
+   * 获取用户的菜单权限（基于角色）- 返回完整的树形结构
+   * 修复：递归查询所有父级菜单，确保树形结构完整
    */
   async getUserMenus(userId: string) {
     try {
@@ -114,32 +115,37 @@ export class UserRoleService {
         roleId: { $in: roleIds.map((id) => new mongoose.Types.ObjectId(id)) },
       });
 
-      const menuIds = [...new Set(roleMenus.map((rm) => rm.menuId.toString()))];
-      console.log(`关联的菜单ID: ${menuIds.length} 个`, menuIds);
+      const directMenuIds = [...new Set(roleMenus.map((rm) => rm.menuId.toString()))];
+      console.log(`直接关联的菜单ID: ${directMenuIds.length} 个`, directMenuIds);
 
-      if (menuIds.length === 0) {
+      if (directMenuIds.length === 0) {
         console.log('⚠️ 角色没有关联任何菜单');
         return [];
       }
-      // 获取菜单详情（包括所有需要的字段）
+
+      // 递归获取所有父级菜单ID
+      const allMenuIds = await this.getAllParentMenuIds(directMenuIds);
+      console.log(`所有菜单ID（包含父级）: ${allMenuIds.length} 个`, allMenuIds);
+
+      // 获取所有菜单详情
       const menus = await MenuModel.find({
-        _id: { $in: menuIds.map((id) => new mongoose.Types.ObjectId(id)) },
+        _id: { $in: allMenuIds.map((id) => new mongoose.Types.ObjectId(id)) },
         status: '0',
       })
-        .select('name path component icon order pid type permission title hidden cache external target')
-        .sort({ order: 1 })
+        .select('name path component icon sort pid type permission title hidden cache external target')
+        .sort({ sort: 1 })
         .lean();
 
-      console.log(`找到 ${menus.length} 个启用状态的菜单`, menus);
+      console.log(`找到 ${menus.length} 个启用状态的菜单`);
 
-      // 转换菜单格式并构建树形结构
+      // 转换菜单格式
       const menuList = menus.map((menu: any) => ({
         id: menu._id.toString(),
         name: menu.name,
         path: menu.path,
         component: menu.component,
         icon: menu.icon,
-        order: menu.order,
+        order: menu.sort,
         parentId: menu.pid ? menu.pid.toString() : null,
         type: menu.type,
         perms: menu.permission, // 兼容性字段
@@ -161,6 +167,35 @@ export class UserRoleService {
       console.error('❌ 获取用户菜单失败:', error);
       return [];
     }
+  }
+
+  /**
+   * 递归获取所有父级菜单ID
+   */
+  private async getAllParentMenuIds(menuIds: string[]): Promise<string[]> {
+    const allIds = new Set<string>(menuIds);
+    let currentIds = [...menuIds];
+    let hasMoreParents = true;
+    const maxDepth = 10; // 防止无限循环
+
+    for (let depth = 0; depth < maxDepth && hasMoreParents; depth++) {
+      const menus = await MenuModel.find({
+        _id: { $in: currentIds.map((id) => new mongoose.Types.ObjectId(id)) },
+      }).select('pid').lean();
+
+      const parentIds = menus
+        .map((menu: any) => menu.pid?.toString())
+        .filter((pid): pid is string => !!pid && !allIds.has(pid));
+
+      if (parentIds.length === 0) {
+        hasMoreParents = false;
+      } else {
+        parentIds.forEach(id => allIds.add(id));
+        currentIds = parentIds;
+      }
+    }
+
+    return Array.from(allIds);
   }
 
   /**
