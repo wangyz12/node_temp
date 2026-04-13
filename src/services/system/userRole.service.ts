@@ -13,6 +13,26 @@ export class UserRoleService {
    * 为用户分配角色
    */
   async assignRolesToUser(userId: string, roleIds: string[]) {
+    // ============================================================
+    // 权限控制点 - 角色分配
+    // ============================================================
+    // 
+    // 当前：仅做基础数据校验
+    // 
+    // TODO: 生产环境请根据需求添加：
+    // - 操作者权限判断（isAdmin）
+    // - 角色分配权限（如：不能分配超级管理员角色给普通用户）
+    // - 防止越权操作（如：普通管理员不能修改超级管理员）
+    // - 操作审计（auditLog）
+    //
+    // 示例：
+    // if (!isAdmin) {
+    //   throw new Error('只有管理员可以分配角色');
+    // }
+    // if (roleIds.includes(superAdminRoleId) && !isSuperAdmin) {
+    //   throw new Error('只有超级管理员可以分配超级管理员角色');
+    // }
+    // ============================================================
     // 检查用户是否存在
     const user = await UserModel.findById(userId);
     if (!user) {

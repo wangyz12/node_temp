@@ -69,6 +69,23 @@ const getDeptDetail = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 创建的部门信息
  */
 const createDept = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 创建部门
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 部门创建权限（如：只能在本部门下创建子部门）
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '只有管理员可以创建部门' });
+  // }
+  // ============================================================
   try {
     const { name, parentId, orderNum, leader, phone, email, status } = req.body;
     checkRequiredParams({ name }, ['name']);
@@ -89,6 +106,23 @@ const createDept = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 更新后的部门信息
  */
 const updateDept = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 更新部门
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 部门修改权限（如：只能修改自己管理的部门）
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '只有管理员可以修改部门' });
+  // }
+  // ============================================================
   try {
     const { id } = req.params;
     checkRequiredParams({ id }, ['id']);
@@ -108,6 +142,23 @@ const updateDept = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 操作结果
  */
 const deleteDept = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 删除部门
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 部门删除权限（如：不能删除有用户的部门）
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '只有管理员可以删除部门' });
+  // }
+  // ============================================================
   try {
     const { id } = req.params;
     checkRequiredParams({ id }, ['id']);

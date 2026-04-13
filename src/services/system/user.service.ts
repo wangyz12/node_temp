@@ -279,6 +279,27 @@ export class UserService {
    * 获取用户列表（带数据权限过滤 - 强化版）
    */
   async getUserList(query: any, dataScope?: any) {
+    // ============================================================
+    // 权限控制点 - 用户列表查询（数据权限过滤）
+    // ============================================================
+    // 
+    // 当前：仅做基础查询条件构建
+    // 
+    // TODO: 生产环境请根据需求添加：
+    // - 数据权限过滤（dataScope）
+    // - 角色权限判断
+    // - 敏感字段过滤
+    // - 查询审计
+    //
+    // 示例：
+    // if (dataScope) {
+    //   // 根据数据权限过滤部门
+    //   if (dataScope.deptIds.length > 0) {
+    //     conditions.deptId = { $in: dataScope.deptIds };
+    //   }
+    // }
+    // ============================================================
+    
     const { page = 1, limit = 10, keyword, deptId, status, phone, account, username } = query;
     const skip = (Number(page) - 1) * Number(limit);
 
@@ -375,6 +396,23 @@ export class UserService {
    * 更新用户
    */
   async updateUser(id: string, data: any) {
+    // ============================================================
+    // 权限控制点 - 用户更新
+    // ============================================================
+    // 
+    // 当前：仅做基础数据校验
+    // 
+    // TODO: 生产环境请根据需求添加：
+    // - 角色判断（isAdmin）
+    // - 字段权限（allowedFields）
+    // - 数据权限（dataScope）
+    // - 操作审计（auditLog）
+    //
+    // 示例：
+    // if (!isAdmin && currentUserId !== targetId) {
+    //   throw new Error('无权限操作');
+    // }
+    // ============================================================
     // 检查唯一字段（手机号和邮箱）
     for (const { field, message } of UNIQUE_FIELDS) {
       if (data[field]) {
@@ -401,6 +439,23 @@ export class UserService {
    * 删除用户
    */
   async deleteUser(id: string) {
+    // ============================================================
+    // 权限控制点 - 用户删除
+    // ============================================================
+    // 
+    // 当前：仅检查用户是否存在
+    // 
+    // TODO: 生产环境请根据需求添加：
+    // - 角色判断（isAdmin）
+    // - 数据权限（dataScope）
+    // - 操作审计（auditLog）
+    // - 防止删除自己
+    //
+    // 示例：
+    // if (!isAdmin) {
+    //   throw new Error('只有管理员可以删除用户');
+    // }
+    // ============================================================
     const user = await UserModel.findByIdAndDelete(id);
     if (!user) {
       throw new Error('用户不存在');

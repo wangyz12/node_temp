@@ -71,6 +71,23 @@ const getRoleDetail = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 创建的角色信息
  */
 const createRole = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 创建角色
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 角色创建权限（如：只有超级管理员可以创建管理员角色）
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '只有管理员可以创建角色' });
+  // }
+  // ============================================================
   try {
     const { name, label, dataScope, status, remark } = req.body;
     checkRequiredParams({ name, label, dataScope }, ['name', 'label', 'dataScope']);
@@ -91,6 +108,23 @@ const createRole = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 更新后的角色信息
  */
 const updateRole = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 更新角色
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 角色修改权限（如：不能修改超级管理员角色）
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '只有管理员可以修改角色' });
+  // }
+  // ============================================================
   try {
     const { id } = req.params;
     checkRequiredParams({ id }, ['id']);
@@ -110,6 +144,23 @@ const updateRole = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 操作结果
  */
 const deleteRole = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 删除角色
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 角色删除权限（如：不能删除系统内置角色）
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '只有管理员可以删除角色' });
+  // }
+  // ============================================================
   try {
     const { id } = req.params;
     checkRequiredParams({ id }, ['id']);
@@ -213,6 +264,23 @@ const getRoleDepts = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 操作结果
  */
 const assignRoleMenus = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 分配角色菜单
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 菜单分配权限（如：不能分配未授权的菜单）
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '只有管理员可以分配菜单' });
+  // }
+  // ============================================================
   try {
     const { id } = req.params;
     const { menuIds } = req.body;
@@ -235,6 +303,23 @@ const assignRoleMenus = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 操作结果
  */
 const assignRoleDepts = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 分配角色部门
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 部门分配权限（如：只能分配自己管理的部门）
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '只有管理员可以分配部门' });
+  // }
+  // ============================================================
   try {
     const { id } = req.params;
     const { deptIds } = req.body;

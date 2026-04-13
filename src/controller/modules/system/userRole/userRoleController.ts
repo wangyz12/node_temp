@@ -30,6 +30,23 @@ const userRoleService = new UserRoleService();
  * @returns {object} 操作结果
  */
 const assignUserRoles = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 分配用户角色
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 角色分配权限（如：不能分配高于自己权限的角色）
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '只有管理员可以分配角色' });
+  // }
+  // ============================================================
   try {
     const { userId, roleIds } = req.body;
     checkRequiredParams({ userId, roleIds }, ['userId', 'roleIds']);
@@ -70,6 +87,23 @@ const getUserRoles = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 操作结果
  */
 const removeUserRole = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 移除用户角色
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 角色移除权限（如：不能移除自己的管理员角色）
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '只有管理员可以移除角色' });
+  // }
+  // ============================================================
   try {
     const { userId, roleId } = req.body;
     checkRequiredParams({ userId, roleId }, ['userId', 'roleId']);
@@ -91,6 +125,23 @@ const removeUserRole = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 操作结果
  */
 const batchUserRoleOperation = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 批量操作用户角色
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 批量操作权限
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '只有管理员可以批量操作用户角色' });
+  // }
+  // ============================================================
   try {
     const { userId, addRoleIds = [], removeRoleIds = [] } = req.body;
     checkRequiredParams({ userId }, ['userId']);
@@ -156,6 +207,23 @@ const checkUserRole = async (req: ExpressRequest, res: ExpressResponse) => {
  * @route POST /api/user-role/batch-assign
  */
 const batchAssignRoles = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 批量分配角色
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 批量分配权限
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '只有管理员可以批量分配角色' });
+  // }
+  // ============================================================
   try {
     const { userIds, roleIds } = req.body;
     checkRequiredParams({ userIds, roleIds }, ['userIds', 'roleIds']);

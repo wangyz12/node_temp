@@ -138,6 +138,24 @@ const updateUserInfo = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 创建的用户信息
  */
 const createUserByAdmin = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 管理员创建用户
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 数据权限校验（如：只能在本部门创建用户）
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '无权限创建用户' });
+  // }
+  // ============================================================
+  
   try {
     const { account, password, username, deptId, phone, email, status, roles } = req.body;
     checkRequiredParams({ account, password, deptId }, ['account', 'password', 'deptId']);
@@ -194,6 +212,24 @@ const getUserDetail = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 更新后的用户信息
  */
 const updateUser = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 更新用户
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 操作者权限校验（如：只能修改自己或下属用户）
+  // - 数据权限校验
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (id !== userId && !await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '无权限修改其他用户' });
+  // }
+  // ============================================================
+  
   try {
     const id = req.params.id as string;
     const user = await userService.updateUser(id, req.body);
@@ -211,6 +247,28 @@ const updateUser = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 操作结果
  */
 const deleteUser = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 删除用户
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 防止删除自己
+  // - 数据权限校验（如：只能删除本部门用户）
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '只有管理员可以删除用户' });
+  // }
+  // if (id === userId) {
+  //   return res.status(400).json({ code: 400, msg: '不能删除自己' });
+  // }
+  // ============================================================
+  
   try {
     const id = req.params.id as string;
     await userService.deleteUser(id);
@@ -251,6 +309,28 @@ const createUser = createUserByAdmin;
  * @returns {object} 操作结果
  */
 const batchDeleteUsers = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 批量删除用户
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 防止删除自己
+  // - 数据权限校验（如：只能删除本部门用户）
+  // - 批量操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '只有管理员可以批量删除用户' });
+  // }
+  // if (ids.includes(userId)) {
+  //   return res.status(400).json({ code: 400, msg: '不能删除自己' });
+  // }
+  // ============================================================
+  
   try {
     const { ids } = req.body;
     checkArrayParam(ids, 'ids');

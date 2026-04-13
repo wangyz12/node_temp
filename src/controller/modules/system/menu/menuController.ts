@@ -90,6 +90,23 @@ const getMenuDetail = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 创建的菜单信息
  */
 const createMenu = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 创建菜单
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 菜单创建权限
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '只有管理员可以创建菜单' });
+  // }
+  // ============================================================
   try {
     const { name, path, component, title, icon, sort, pid, type, hidden, cache, permissions, external, target } = req.body;
     checkRequiredParams({ name, path, component, title }, ['name', 'path', 'component', 'title']);
@@ -110,6 +127,23 @@ const createMenu = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 更新后的菜单信息
  */
 const updateMenu = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 更新菜单
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 菜单修改权限（如：不能修改系统内置菜单）
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '只有管理员可以修改菜单' });
+  // }
+  // ============================================================
   try {
     const { id } = req.params;
     checkRequiredParams({ id }, ['id']);
@@ -129,6 +163,23 @@ const updateMenu = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 操作结果
  */
 const deleteMenu = async (req: ExpressRequest, res: ExpressResponse) => {
+  // ============================================================
+  // 权限控制点 - 删除菜单
+  // ============================================================
+  // 
+  // 当前：仅做基础参数校验
+  // 
+  // TODO: 生产环境请根据需求添加：
+  // - 管理员权限校验
+  // - 菜单删除权限（如：不能删除有子菜单的菜单）
+  // - 操作审计
+  //
+  // 示例：
+  // const userId = checkAuth(req);
+  // if (!await isAdmin(userId)) {
+  //   return res.status(403).json({ code: 403, msg: '只有管理员可以删除菜单' });
+  // }
+  // ============================================================
   try {
     const { id } = req.params;
     checkRequiredParams({ id }, ['id']);
