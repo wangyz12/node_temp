@@ -4,6 +4,7 @@ import express from 'express';
 import controller from '@/controller/index.ts';
 import { authenticate } from '@/middlewares/auth.ts';
 import { checkPermission } from '@/middlewares/permission.ts';
+import { systemPermissions } from '@/constants/permissions';
 
 const router = express.Router();
 
@@ -11,39 +12,39 @@ const router = express.Router();
 router.use(authenticate);
 
 // 获取角色列表
-router.get('/list', checkPermission('system:role:list'), controller.roleController.getRoleList);
+router.get('/list', checkPermission(systemPermissions.role.list), controller.roleController.getRoleList);
 
 // 获取所有角色（下拉选择）
-router.get('/all', checkPermission('system:role:list'), controller.roleController.getAllRoles);
+router.get('/all', checkPermission(systemPermissions.role.list), controller.roleController.getAllRoles);
 
 // 获取角色详情
-router.get('/detail/:id', checkPermission('system:role:query'), controller.roleController.getRoleDetail);
+router.get('/detail/:id', checkPermission(systemPermissions.role.query), controller.roleController.getRoleDetail);
 
 // 创建角色
-router.post('/create', checkPermission('system:role:add'), controller.roleController.createRole);
+router.post('/create', checkPermission(systemPermissions.role.add), controller.roleController.createRole);
 
 // 更新角色
-router.put('/update/:id', checkPermission('system:role:edit'), controller.roleController.updateRole);
+router.put('/update/:id', checkPermission(systemPermissions.role.edit), controller.roleController.updateRole);
 
 // 删除角色
-router.delete('/delete/:id', checkPermission('system:role:remove'), controller.roleController.deleteRole);
+router.delete('/delete/:id', checkPermission(systemPermissions.role.remove), controller.roleController.deleteRole);
 
 // 获取菜单树（通用）
-router.get('/menu-tree', checkPermission('system:role:edit'), controller.roleController.getRoleMenuTree);
+router.get('/menu-tree', checkPermission(systemPermissions.role.edit), controller.roleController.getRoleMenuTree);
 
 // 获取部门树（通用）
-router.get('/dept-tree', checkPermission('system:role:edit'), controller.roleController.getRoleDeptTree);
+router.get('/dept-tree', checkPermission(systemPermissions.role.edit), controller.roleController.getRoleDeptTree);
 
 // 获取角色已分配的菜单ID列表
-router.get('/:id/menus', checkPermission('system:role:edit'), controller.roleController.getRoleMenus);
+router.get('/:id/menus', checkPermission(systemPermissions.role.edit), controller.roleController.getRoleMenus);
 
 // 获取角色已分配的部门ID列表
-router.get('/:id/depts', checkPermission('system:role:edit'), controller.roleController.getRoleDepts);
+router.get('/:id/depts', checkPermission(systemPermissions.role.edit), controller.roleController.getRoleDepts);
 
 // 分配角色菜单权限
-router.post('/:id/assign-menus', checkPermission('system:role:edit'), controller.roleController.assignRoleMenus);
+router.post('/:id/assign-menus', checkPermission(systemPermissions.role.edit), controller.roleController.assignRoleMenus);
 
 // 分配角色部门权限
-router.post('/:id/assign-depts', checkPermission('system:role:edit'), controller.roleController.assignRoleDepts);
+router.post('/:id/assign-depts', checkPermission(systemPermissions.role.edit), controller.roleController.assignRoleDepts);
 
 export default router;

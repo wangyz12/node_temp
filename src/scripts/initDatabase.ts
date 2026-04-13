@@ -7,6 +7,7 @@
 import mongoose from 'mongoose';
 
 import { computedEnv as env } from '@/config/env.ts';
+import { commonPermissions, businessPermissions, systemPermissions } from '@/constants/permissions';
 import { DeptModel } from '@/models/system/dept/dept';
 import { MenuModel } from '@/models/system/menu/menu';
 import { RoleModel } from '@/models/system/role/role';
@@ -119,9 +120,9 @@ async function initEnhancedDatabase() {
 
     // 创建顶级菜单
     const topLevelMenus = [
-      { name: 'home', path: '/home', component: 'home/index', title: '首页', icon: 'home', sort: 0, type: 'menu', hidden: false, cache: true, permission: 'home:view', status: '0' },
-      { name: 'system', path: '/system', component: 'Layout', title: '系统管理', icon: 'system', sort: 1, type: 'menu', hidden: false, cache: true, permission: 'system:manage', status: '0' },
-      { name: 'business', path: '/business', component: 'Layout', title: '业务管理', icon: 'business', sort: 2, type: 'menu', hidden: false, cache: true, permission: 'business:manage', status: '0' },
+      { name: 'home', path: '/home', component: 'home/index', title: '首页', icon: 'home', sort: 0, type: 'menu', hidden: false, cache: true, permission: commonPermissions.home.view, status: '0' },
+      { name: 'system', path: '/system', component: 'Layout', title: '系统管理', icon: 'system', sort: 1, type: 'menu', hidden: false, cache: true, permission: systemPermissions.manage, status: '0' },
+      { name: 'business', path: '/business', component: 'Layout', title: '业务管理', icon: 'business', sort: 2, type: 'menu', hidden: false, cache: true, permission: businessPermissions.manage, status: '0' },
     ];
 
     for (const menu of topLevelMenus) {
@@ -148,7 +149,7 @@ async function initEnhancedDatabase() {
         type: 'menu',
         hidden: false,
         cache: true,
-        permission: 'system:user:list,system:user:add,system:user:edit,system:user:delete,system:user:export',
+        permission: `${systemPermissions.user.list},${systemPermissions.user.add},${systemPermissions.user.edit},${systemPermissions.user.delete},${systemPermissions.user.export}`,
         status: '0',
       },
       {
@@ -161,7 +162,7 @@ async function initEnhancedDatabase() {
         type: 'menu',
         hidden: false,
         cache: true,
-        permission: 'system:role:list,system:role:add,system:role:edit,system:role:delete,system:role:export',
+        permission: `${systemPermissions.role.list},${systemPermissions.role.add},${systemPermissions.role.edit},${systemPermissions.role.remove},${systemPermissions.role.export}`,
         status: '0',
       },
       {
@@ -174,7 +175,7 @@ async function initEnhancedDatabase() {
         type: 'menu',
         hidden: false,
         cache: true,
-        permission: 'system:menu:list,system:menu:add,system:menu:edit,system:menu:delete',
+        permission: `${systemPermissions.menu.list},${systemPermissions.menu.add},${systemPermissions.menu.edit},${systemPermissions.menu.delete}`,
         status: '0',
       },
       {
@@ -187,7 +188,7 @@ async function initEnhancedDatabase() {
         type: 'menu',
         hidden: false,
         cache: true,
-        permission: 'system:dept:list,system:dept:add,system:dept:edit,system:dept:delete,system:dept:export',
+        permission: `${systemPermissions.dept.list},${systemPermissions.dept.add},${systemPermissions.dept.edit},${systemPermissions.dept.remove},${systemPermissions.dept.export}`,
         status: '0',
       },
     ];
@@ -219,7 +220,7 @@ async function initEnhancedDatabase() {
         type: 'menu',
         hidden: false,
         cache: true,
-        permission: 'business:project:list',
+        permission: businessPermissions.project.list,
         status: '0',
       },
       {
@@ -232,7 +233,7 @@ async function initEnhancedDatabase() {
         type: 'menu',
         hidden: false,
         cache: true,
-        permission: 'business:task:list',
+        permission: businessPermissions.task.list,
         status: '0',
       },
     ];
