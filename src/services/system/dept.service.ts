@@ -32,15 +32,19 @@ export class DeptService {
         if (parentId === null) return !dept.parentId;
         return dept.parentId?.toString() === parentId;
       });
-
+      console.log(filtered);
       return filtered.map((dept: any) => {
         const children = buildDeptTree(dept._id.toString());
         return {
           id: dept._id.toString(),
           name: dept.name,
+          code: dept.code,
           parentId: dept.parentId?.toString() || null,
           ancestors: dept.ancestors || '',
           orderNum: dept.orderNum,
+          leader: dept.leader,
+          phone: dept.phone,
+          email: dept.email,
           status: dept.status,
           remark: dept.remark || '',
           createdAt: dept.createdAt,
