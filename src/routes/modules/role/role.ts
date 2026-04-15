@@ -15,7 +15,7 @@ router.use(authenticate);
 router.get('/list', checkPermission(systemPermissions.role.list), controller.roleController.getRoleList);
 
 // 获取所有角色（下拉选择）
-router.get('/all', checkPermission(systemPermissions.role.list), controller.roleController.getAllRoles);
+router.get('/all', controller.roleController.getAllRoles);
 
 // 获取角色详情
 router.get('/detail/:id', checkPermission(systemPermissions.role.query), controller.roleController.getRoleDetail);

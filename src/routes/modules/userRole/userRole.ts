@@ -18,13 +18,13 @@ router.post('/assign', checkPermission(systemPermissions.user.edit), controller.
 router.post('/batch-assign', checkPermission(systemPermissions.user.edit), controller.userRoleController.batchAssignRoles);
 
 // 获取用户的角色列表
-router.get('/user/:userId/roles', checkPermission(systemPermissions.user.query), controller.userRoleController.getUserRoles);
+router.get('/user/:userId/roles', checkPermission(systemPermissions.user.edit), controller.userRoleController.getUserRoles);
 
 // 获取用户详情（包含角色）
 router.get('/user/:userId/detail', checkPermission(systemPermissions.user.query), controller.userRoleController.getUserWithRoles);
 
 // 获取角色下的用户列表
-router.get('/role/:roleId/users', checkPermission(systemPermissions.role.query), controller.userRoleController.getRoleUsers);
+router.get('/role/:roleId/users', controller.userRoleController.getRoleUsers);
 
 // 获取当前用户的菜单权限
 router.get('/current/menus', controller.userRoleController.getUserMenus);

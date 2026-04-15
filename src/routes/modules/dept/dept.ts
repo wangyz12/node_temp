@@ -15,7 +15,7 @@ router.use(authenticate);
 router.get('/tree', checkPermission(systemPermissions.dept.list), controller.deptController.getDeptTree);
 
 // 获取所有部门（下拉选择）
-router.get('/all', checkPermission(systemPermissions.dept.list), controller.deptController.getAllDepts);
+router.get('/all', controller.deptController.getAllDepts);
 
 // 获取部门详情
 router.get('/detail/:id', checkPermission(systemPermissions.dept.query), controller.deptController.getDeptDetail);

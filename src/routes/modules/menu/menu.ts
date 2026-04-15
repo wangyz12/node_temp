@@ -13,7 +13,7 @@ router.use(authenticate);
 router.get('/tree', checkPermission(systemPermissions.menu.list), controller.menuController.getMenuTree);
 
 // 获取所有菜单（简单列表）
-router.get('/all', checkPermission(systemPermissions.menu.list), controller.menuController.getAllMenus);
+router.get('/all', controller.menuController.getMenuTree);
 
 // 获取菜单详情
 router.get('/detail/:id', checkPermission(systemPermissions.menu.query), controller.menuController.getMenuDetail);
