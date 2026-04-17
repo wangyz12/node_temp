@@ -67,7 +67,7 @@ const roleSchema = new Schema<IRole>(
   }
 );
 
-// 索引
-roleSchema.index({ name: 1 });
+// 注意：name 字段已经有 unique: true，不需要额外创建索引
+// roleSchema.index({ name: 1 }); // 这会导致重复索引警告
 
 export const RoleModel = mongoose.models.Role ? mongoose.model<IRole>('Role') : mongoose.model<IRole>('Role', roleSchema);

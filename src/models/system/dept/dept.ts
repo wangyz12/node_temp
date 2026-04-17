@@ -130,41 +130,44 @@ const deptSchema = new Schema<IDept>(
 );
 
 // 保存前中间件：自动计算 ancestors 和 level
-deptSchema.pre('save', async function (this: IDept & Document, next: (err?: any) => void) {
-  try {
-    // 如果是新部门或者父部门有变化
-    if (this.isNew || this.isModified('parentId')) {
-      if (this.parentId) {
-        // 查询父部门
-        const parentDept = await mongoose.model<IDept>('Dept').findById(this.parentId);
-        if (parentDept) {
-          // 构建 ancestors: 父部门的 ancestors + 逗号 + 父部门ID
-          this.ancestors = `${parentDept.ancestors},${parentDept._id.toString()}`;
-          this.level = parentDept.level + 1;
-        } else {
-          // 父部门不存在，设为顶级部门
-          this.ancestors = `,${this._id.toString()}`;
-          this.level = 0;
-        }
+deptSchema.pre('save', async function () {
+  // 如果是新部门或者父部门有变化
+  if (this.isNew || this.isModified('parentId')) {
+    // 确保 _id 存在（对于新文档）
+    if (!this._id) {
+      this._id = new mongoose.Types.ObjectId();
+    }
+
+    if (this.parentId) {
+      // 查询父部门
+      const parentDept = await mongoose.model<IDept>('Dept').findById(this.parentId);
+      if (parentDept) {
+        // 构建 ancestors: 父部门的 ancestors + 逗号 + 父部门ID
+        this.ancestors = `${parentDept.ancestors},${parentDept._id.toString()}`;
+        this.level = parentDept.level + 1;
       } else {
-        // 没有父部门，设为顶级部门
+        // 父部门不存在，设为顶级部门
         this.ancestors = `,${this._id.toString()}`;
         this.level = 0;
       }
+    } else {
+      // 没有父部门，设为顶级部门
+      this.ancestors = `,${this._id.toString()}`;
+      this.level = 0;
     }
-    next();
-  } catch (error: any) {
-    next(error);
   }
 });
 
 // 更新前中间件：当父部门变化时，需要更新所有子部门的 ancestors 和 level
-deptSchema.pre('findOneAndUpdate', async function (this: any, next: (err?: any) => void) {
-  try {
-    const update = this.getUpdate();
-
+deptSchema.pre('findOneAndUpdate', async function (this: mongoose.Query<any, any>) {
+  const update = this.getUpdate();
+  
+  // 处理 UpdateQuery 类型
+  if (update && typeof update === 'object' && !Array.isArray(update)) {
+    const updateObj = update as Record<string, any>;
+    
     // 如果更新了 parentId
-    if (update && update.parentId !== undefined) {
+    if (updateObj.parentId !== undefined) {
       const docToUpdate = await this.model.findOne(this.getQuery());
 
       if (docToUpdate) {
@@ -172,26 +175,32 @@ deptSchema.pre('findOneAndUpdate', async function (this: any, next: (err?: any) 
         let newAncestors = `,${docToUpdate._id.toString()}`;
         let newLevel = 0;
 
-        if (update.parentId) {
-          const parentDept = await mongoose.model<IDept>('Dept').findById(update.parentId);
+        if (updateObj.parentId) {
+          const parentDept = await mongoose.model<IDept>('Dept').findById(updateObj.parentId);
           if (parentDept) {
             newAncestors = `${parentDept.ancestors},${docToUpdate._id.toString()}`;
             newLevel = parentDept.level + 1;
           }
         }
 
-        // 更新当前部门
-        update.$set = update.$set || {};
-        update.$set.ancestors = newAncestors;
-        update.$set.level = newLevel;
+        // 更新当前部门 - 使用正确的 MongoDB 更新语法
+        const setUpdate: Record<string, any> = {
+          ancestors: newAncestors,
+          level: newLevel
+        };
+        
+        // 如果 updateObj 已经有 $set，合并它
+        if (updateObj.$set && typeof updateObj.$set === 'object') {
+          Object.assign(setUpdate, updateObj.$set);
+        }
+        
+        // 设置更新对象
+        updateObj.$set = setUpdate;
 
         // 递归更新所有子部门
         await updateChildrenAncestors(docToUpdate._id.toString(), newAncestors, newLevel + 1);
       }
     }
-    next();
-  } catch (error: any) {
-    next(error);
   }
 });
 
