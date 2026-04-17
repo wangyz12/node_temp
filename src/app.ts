@@ -11,7 +11,7 @@ import { RateLimiterUtil } from '@/utils/rateLimiter.ts';
 
 import { computedEnv as env } from './config/env.ts';
 import { SecurityConfig } from './config/security.ts';
-import router from './routes/index.ts'
+import router from './routes/index.ts';
 import { OK, NOT_FOUND, INTERNAL_SERVER_ERROR } from '@/constants/httpStatus';
 import './utils/global.ts';
 
@@ -39,8 +39,47 @@ app.get('/health', (_req, res) => {
 
 // ==================== 2. 基础中间件 ====================
 app.use(loggerMiddleware);
-app.use(cors());
+// 信任代理（因为使用了 Nginx 反向代理）
+app.set('trust proxy', 1);
+const allowedOrigins = ['https://www.temp-code.top', 'https://temp-code.top', 'https://47.102.196.166', 'http://localhost:3000', 'http://localhost:5173', /\.vercel\.app$/, /\.temp-code\.top$/];
 
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // 允许没有 origin 的请求（如服务器间调用）
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      // 检查是否允许
+      const isAllowed = allowedOrigins.some((pattern) => {
+        if (typeof pattern === 'string') {
+          return origin === pattern;
+        }
+        if (pattern instanceof RegExp) {
+          return pattern.test(origin);
+        }
+        return false;
+      });
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        console.warn(`CORS blocked origin: ${origin}`);
+        // 开发环境允许所有，生产环境可以拒绝
+        callback(null, true);
+        // callback(new Error('CORS not allowed'));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    maxAge: 86400,
+    optionsSuccessStatus: 200,
+  })
+);
+app.options('*', cors());
 // ==================== 3. 安全中间件 ====================
 app.use(SecurityConfig.hideServerInfo);
 app.use(SecurityConfig.helmetConfig);
