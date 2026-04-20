@@ -65,3 +65,7 @@ desktop.ini
 
 # 运行时文件
 *.pid
+
+
+# Docker
+*.log
