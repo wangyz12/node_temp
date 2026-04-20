@@ -4,11 +4,14 @@ services:
     container_name: my-admin-app
     restart: unless-stopped
     network_mode: host
+    # 生产环境请换成下方写法 这里只做简单测试
     environment:
       - MONGODB_URI=mongodb://localhost:27017/my_admin
       - JWT_SECRET=615b2c65-1564-495b-9387-72fb0bacf832
       - JWT_EXPIRES_IN=24h
       - PORT=3000
       - NODE_ENV=production
+    #env_file:
+      #- .env.production
     volumes:
       - ./logs:/app/logs
