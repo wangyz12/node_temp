@@ -141,21 +141,23 @@ const createUserByAdmin = async (req: ExpressRequest, res: ExpressResponse) => {
   // ============================================================
   // 权限控制点 - 管理员创建用户
   // ============================================================
-  // 
-  // 当前：仅做基础参数校验
-  // 
-  // TODO: 生产环境请根据需求添加：
-  // - 管理员权限校验
-  // - 数据权限校验（如：只能在本部门创建用户）
-  // - 操作审计
   //
-  // 示例：
-  // const userId = checkAuth(req);
-  // if (!await isAdmin(userId)) {
-  //   return res.status(403).json({ code: 403, msg: '无权限创建用户' });
+  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
+  //
+  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
+  //
+  // 生产环境如需数据权限，请按以下步骤实现：
+  //
+  // 1. 在中间件中计算 dataScope
+  // 2. 根据角色获取有权限的部门ID列表
+  // 3. 将 deptIds 传入此处进行过滤
+  //
+  // 示例代码：
+  // if (dataScope?.deptIds?.length) {
+  //   conditions.deptId = { $in: dataScope.deptIds };
   // }
   // ============================================================
-  
+
   try {
     const { account, password, username, deptId, phone, email, status, roles } = req.body;
     checkRequiredParams({ account, password, deptId }, ['account', 'password', 'deptId']);
@@ -215,21 +217,23 @@ const updateUser = async (req: ExpressRequest, res: ExpressResponse) => {
   // ============================================================
   // 权限控制点 - 更新用户
   // ============================================================
-  // 
-  // 当前：仅做基础参数校验
-  // 
-  // TODO: 生产环境请根据需求添加：
-  // - 操作者权限校验（如：只能修改自己或下属用户）
-  // - 数据权限校验
-  // - 操作审计
   //
-  // 示例：
-  // const userId = checkAuth(req);
-  // if (id !== userId && !await isAdmin(userId)) {
-  //   return res.status(403).json({ code: 403, msg: '无权限修改其他用户' });
+  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
+  //
+  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
+  //
+  // 生产环境如需数据权限，请按以下步骤实现：
+  //
+  // 1. 在中间件中计算 dataScope
+  // 2. 根据角色获取有权限的部门ID列表
+  // 3. 将 deptIds 传入此处进行过滤
+  //
+  // 示例代码：
+  // if (dataScope?.deptIds?.length) {
+  //   conditions.deptId = { $in: dataScope.deptIds };
   // }
   // ============================================================
-  
+
   try {
     const id = req.params.id as string;
     const user = await userService.updateUser(id, req.body);
@@ -250,25 +254,23 @@ const deleteUser = async (req: ExpressRequest, res: ExpressResponse) => {
   // ============================================================
   // 权限控制点 - 删除用户
   // ============================================================
-  // 
-  // 当前：仅做基础参数校验
-  // 
-  // TODO: 生产环境请根据需求添加：
-  // - 管理员权限校验
-  // - 防止删除自己
-  // - 数据权限校验（如：只能删除本部门用户）
-  // - 操作审计
   //
-  // 示例：
-  // const userId = checkAuth(req);
-  // if (!await isAdmin(userId)) {
-  //   return res.status(403).json({ code: 403, msg: '只有管理员可以删除用户' });
-  // }
-  // if (id === userId) {
-  //   return res.status(400).json({ code: 400, msg: '不能删除自己' });
+  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
+  //
+  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
+  //
+  // 生产环境如需数据权限，请按以下步骤实现：
+  //
+  // 1. 在中间件中计算 dataScope
+  // 2. 根据角色获取有权限的部门ID列表
+  // 3. 将 deptIds 传入此处进行过滤
+  //
+  // 示例代码：
+  // if (dataScope?.deptIds?.length) {
+  //   conditions.deptId = { $in: dataScope.deptIds };
   // }
   // ============================================================
-  
+
   try {
     const id = req.params.id as string;
     await userService.deleteUser(id);
@@ -312,25 +314,23 @@ const batchDeleteUsers = async (req: ExpressRequest, res: ExpressResponse) => {
   // ============================================================
   // 权限控制点 - 批量删除用户
   // ============================================================
-  // 
-  // 当前：仅做基础参数校验
-  // 
-  // TODO: 生产环境请根据需求添加：
-  // - 管理员权限校验
-  // - 防止删除自己
-  // - 数据权限校验（如：只能删除本部门用户）
-  // - 批量操作审计
   //
-  // 示例：
-  // const userId = checkAuth(req);
-  // if (!await isAdmin(userId)) {
-  //   return res.status(403).json({ code: 403, msg: '只有管理员可以批量删除用户' });
-  // }
-  // if (ids.includes(userId)) {
-  //   return res.status(400).json({ code: 400, msg: '不能删除自己' });
+  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
+  //
+  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
+  //
+  // 生产环境如需数据权限，请按以下步骤实现：
+  //
+  // 1. 在中间件中计算 dataScope
+  // 2. 根据角色获取有权限的部门ID列表
+  // 3. 将 deptIds 传入此处进行过滤
+  //
+  // 示例代码：
+  // if (dataScope?.deptIds?.length) {
+  //   conditions.deptId = { $in: dataScope.deptIds };
   // }
   // ============================================================
-  
+
   try {
     const { ids } = req.body;
     checkArrayParam(ids, 'ids');
