@@ -34,6 +34,10 @@ RUN npm ci --omit=dev
 # 创建日志目录
 RUN mkdir -p /app/logs && chown -R nodejs:nodejs /app/logs
 
+# 从 .env.example 创建 .env.production 并修改 MongoDB 地址
+COPY .env.example .env.production
+RUN sed -i 's|localhost:27017|mongodb:27017|g' .env.production
+
 USER nodejs
 
 EXPOSE 3000
