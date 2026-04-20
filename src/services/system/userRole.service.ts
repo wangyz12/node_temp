@@ -13,25 +13,6 @@ export class UserRoleService {
    * 为用户分配角色
    */
   async assignRolesToUser(userId: string, roleIds: string[]) {
-    // ============================================================
-    // 权限控制点 - 角色分配
-    // ============================================================
-    //
-    // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-    //
-    // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-    //
-    // 生产环境如需数据权限，请按以下步骤实现：
-    //
-    // 1. 在中间件中计算 dataScope
-    // 2. 根据角色获取有权限的部门ID列表
-    // 3. 将 deptIds 传入此处进行过滤
-    //
-    // 示例代码：
-    // if (dataScope?.deptIds?.length) {
-    //   conditions.deptId = { $in: dataScope.deptIds };
-    // }
-    // ============================================================
     // 检查用户是否存在
     const user = await UserModel.findById(userId);
     if (!user) {

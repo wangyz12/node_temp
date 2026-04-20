@@ -30,25 +30,6 @@ const userRoleService = new UserRoleService();
  * @returns {object} 操作结果
  */
 const assignUserRoles = async (req: ExpressRequest, res: ExpressResponse) => {
-  // ============================================================
-  // 权限控制点 - 分配用户角色
-  // ============================================================
-  //
-  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-  //
-  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-  //
-  // 生产环境如需数据权限，请按以下步骤实现：
-  //
-  // 1. 在中间件中计算 dataScope
-  // 2. 根据角色获取有权限的部门ID列表
-  // 3. 将 deptIds 传入此处进行过滤
-  //
-  // 示例代码：
-  // if (dataScope?.deptIds?.length) {
-  //   conditions.deptId = { $in: dataScope.deptIds };
-  // }
-  // ============================================================
   try {
     const { userId, roleIds } = req.body;
     checkRequiredParams({ userId, roleIds }, ['userId', 'roleIds']);
@@ -89,25 +70,6 @@ const getUserRoles = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 操作结果
  */
 const removeUserRole = async (req: ExpressRequest, res: ExpressResponse) => {
-  // ============================================================
-  // 权限控制点 - 移除用户角色
-  // ============================================================
-  //
-  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-  //
-  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-  //
-  // 生产环境如需数据权限，请按以下步骤实现：
-  //
-  // 1. 在中间件中计算 dataScope
-  // 2. 根据角色获取有权限的部门ID列表
-  // 3. 将 deptIds 传入此处进行过滤
-  //
-  // 示例代码：
-  // if (dataScope?.deptIds?.length) {
-  //   conditions.deptId = { $in: dataScope.deptIds };
-  // }
-  // ============================================================
   try {
     const { userId, roleId } = req.body;
     checkRequiredParams({ userId, roleId }, ['userId', 'roleId']);
@@ -129,25 +91,6 @@ const removeUserRole = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 操作结果
  */
 const batchUserRoleOperation = async (req: ExpressRequest, res: ExpressResponse) => {
-  // ============================================================
-  // 权限控制点 - 批量操作用户角色
-  // ============================================================
-  //
-  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-  //
-  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-  //
-  // 生产环境如需数据权限，请按以下步骤实现：
-  //
-  // 1. 在中间件中计算 dataScope
-  // 2. 根据角色获取有权限的部门ID列表
-  // 3. 将 deptIds 传入此处进行过滤
-  //
-  // 示例代码：
-  // if (dataScope?.deptIds?.length) {
-  //   conditions.deptId = { $in: dataScope.deptIds };
-  // }
-  // ============================================================
   try {
     const { userId, addRoleIds = [], removeRoleIds = [] } = req.body;
     checkRequiredParams({ userId }, ['userId']);
@@ -213,25 +156,6 @@ const checkUserRole = async (req: ExpressRequest, res: ExpressResponse) => {
  * @route POST /api/user-role/batch-assign
  */
 const batchAssignRoles = async (req: ExpressRequest, res: ExpressResponse) => {
-  // ============================================================
-  // 权限控制点 - 批量分配角色
-  // ============================================================
-  //
-  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-  //
-  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-  //
-  // 生产环境如需数据权限，请按以下步骤实现：
-  //
-  // 1. 在中间件中计算 dataScope
-  // 2. 根据角色获取有权限的部门ID列表
-  // 3. 将 deptIds 传入此处进行过滤
-  //
-  // 示例代码：
-  // if (dataScope?.deptIds?.length) {
-  //   conditions.deptId = { $in: dataScope.deptIds };
-  // }
-  // ============================================================
   try {
     const { userIds, roleIds } = req.body;
     checkRequiredParams({ userIds, roleIds }, ['userIds', 'roleIds']);

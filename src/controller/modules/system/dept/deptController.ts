@@ -69,25 +69,6 @@ const getDeptDetail = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 创建的部门信息
  */
 const createDept = async (req: ExpressRequest, res: ExpressResponse) => {
-  // ============================================================
-  // 权限控制点 - 创建部门
-  // ============================================================
-  //
-  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-  //
-  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-  //
-  // 生产环境如需数据权限，请按以下步骤实现：
-  //
-  // 1. 在中间件中计算 dataScope
-  // 2. 根据角色获取有权限的部门ID列表
-  // 3. 将 deptIds 传入此处进行过滤
-  //
-  // 示例代码：
-  // if (dataScope?.deptIds?.length) {
-  //   conditions.deptId = { $in: dataScope.deptIds };
-  // }
-  // ============================================================
   try {
     const { name, parentId, orderNum, leader, phone, email, status } = req.body;
     checkRequiredParams({ name }, ['name']);
@@ -108,25 +89,6 @@ const createDept = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 更新后的部门信息
  */
 const updateDept = async (req: ExpressRequest, res: ExpressResponse) => {
-  // ============================================================
-  // 权限控制点 - 更新部门
-  // ============================================================
-  //
-  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-  //
-  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-  //
-  // 生产环境如需数据权限，请按以下步骤实现：
-  //
-  // 1. 在中间件中计算 dataScope
-  // 2. 根据角色获取有权限的部门ID列表
-  // 3. 将 deptIds 传入此处进行过滤
-  //
-  // 示例代码：
-  // if (dataScope?.deptIds?.length) {
-  //   conditions.deptId = { $in: dataScope.deptIds };
-  // }
-  // ============================================================
   try {
     const { id } = req.params;
     checkRequiredParams({ id }, ['id']);
@@ -146,25 +108,6 @@ const updateDept = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 操作结果
  */
 const deleteDept = async (req: ExpressRequest, res: ExpressResponse) => {
-  // ============================================================
-  // 权限控制点 - 删除部门
-  // ============================================================
-  //
-  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-  //
-  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-  //
-  // 生产环境如需数据权限，请按以下步骤实现：
-  //
-  // 1. 在中间件中计算 dataScope
-  // 2. 根据角色获取有权限的部门ID列表
-  // 3. 将 deptIds 传入此处进行过滤
-  //
-  // 示例代码：
-  // if (dataScope?.deptIds?.length) {
-  //   conditions.deptId = { $in: dataScope.deptIds };
-  // }
-  // ============================================================
   try {
     const { id } = req.params;
     checkRequiredParams({ id }, ['id']);

@@ -279,26 +279,6 @@ export class UserService {
    * 获取用户列表（带数据权限过滤 - 强化版）
    */
   async getUserList(query: any, dataScope?: any) {
-    // ============================================================
-    // 权限控制点 - 用户列表查询（数据权限过滤）
-    // ============================================================
-    //
-    // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-    //
-    // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-    //
-    // 生产环境如需数据权限，请按以下步骤实现：
-    //
-    // 1. 在中间件中计算 dataScope
-    // 2. 根据角色获取有权限的部门ID列表
-    // 3. 将 deptIds 传入此处进行过滤
-    //
-    // 示例代码：
-    // if (dataScope?.deptIds?.length) {
-    //   conditions.deptId = { $in: dataScope.deptIds };
-    // }
-    // ============================================================
-
     const { page = 1, limit = 10, keyword, deptId, status, phone, account, username } = query;
     const skip = (Number(page) - 1) * Number(limit);
 
@@ -395,25 +375,6 @@ export class UserService {
    * 更新用户
    */
   async updateUser(id: string, data: any) {
-    // ============================================================
-    // 权限控制点 - 用户更新
-    // ============================================================
-    //
-    // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-    //
-    // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-    //
-    // 生产环境如需数据权限，请按以下步骤实现：
-    //
-    // 1. 在中间件中计算 dataScope
-    // 2. 根据角色获取有权限的部门ID列表
-    // 3. 将 deptIds 传入此处进行过滤
-    //
-    // 示例代码：
-    // if (dataScope?.deptIds?.length) {
-    //   conditions.deptId = { $in: dataScope.deptIds };
-    // }
-    // ============================================================
     // 检查唯一字段（手机号和邮箱）
     for (const { field, message } of UNIQUE_FIELDS) {
       if (data[field]) {
@@ -440,25 +401,6 @@ export class UserService {
    * 删除用户
    */
   async deleteUser(id: string) {
-    // ============================================================
-    // 权限控制点 - 用户删除
-    // ============================================================
-    //
-    // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-    //
-    // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-    //
-    // 生产环境如需数据权限，请按以下步骤实现：
-    //
-    // 1. 在中间件中计算 dataScope
-    // 2. 根据角色获取有权限的部门ID列表
-    // 3. 将 deptIds 传入此处进行过滤
-    //
-    // 示例代码：
-    // if (dataScope?.deptIds?.length) {
-    //   conditions.deptId = { $in: dataScope.deptIds };
-    // }
-    // ============================================================
     const user = await UserModel.findByIdAndDelete(id);
     if (!user) {
       throw new Error('用户不存在');
