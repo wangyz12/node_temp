@@ -481,8 +481,8 @@ npx tsx src/scripts/verifyDataScope.ts
 npm run init-db
 
 # 默认管理员账号：
-# 用户名: admin
-# 密码: admin_123
+# 用户名: superadmin
+# 密码: SuperAdmin_123
 # 角色: super_admin（拥有所有权限）
 ```
 
