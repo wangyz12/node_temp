@@ -1,42 +1,11 @@
 services:
-  mongodb:
-    image: mongo:6
-    container_name: my-admin-mongodb
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin123
-      MONGO_INITDB_DATABASE: my_admin
-    networks:
-      - my-admin-network
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   app:
     build: .
     container_name: my-admin-app
     restart: unless-stopped
     ports:
       - "3000:3000"
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    # 不需要 env_file，因为 Dockerfile 里已经处理了
-    networks:
-      - my-admin-network
+    env_file:
+      - .env.production
     volumes:
       - ./logs:/app/logs
-
-networks:
-  my-admin-network:
-    driver: bridge
-
-volumes:
-  mongodb_data:
