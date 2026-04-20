@@ -1,4 +1,3 @@
-// src/controller/modules/captcha/captcha.ts
 /**
  * 验证码控制器
  *

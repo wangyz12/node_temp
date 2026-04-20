@@ -1,10 +1,10 @@
-// src/routes/modules/userRole/userRole.ts
 import express from 'express';
 
 import controller from '@/controller/index.ts';
 import { authenticate } from '@/middlewares/auth.ts';
 import { checkPermission } from '@/middlewares/permission.ts';
 import { systemPermissions } from '@/constants/permissions';
+import { dataScope } from '@/middlewares/dataScope';
 
 const router = express.Router();
 
@@ -21,10 +21,10 @@ router.post('/batch-assign', checkPermission(systemPermissions.user.edit), contr
 router.get('/user/:userId/roles', checkPermission(systemPermissions.user.edit), controller.userRoleController.getUserRoles);
 
 // 获取用户详情（包含角色）
-router.get('/user/:userId/detail', checkPermission(systemPermissions.user.query), controller.userRoleController.getUserWithRoles);
+router.get('/user/:userId/detail', dataScope({ deptAlias: 'dept', userAlias: 'user' }), checkPermission(systemPermissions.user.query), controller.userRoleController.getUserWithRoles);
 
 // 获取角色下的用户列表
-router.get('/role/:roleId/users', controller.userRoleController.getRoleUsers);
+router.get('/role/:roleId/users', dataScope({ deptAlias: 'dept', userAlias: 'user' }), controller.userRoleController.getRoleUsers);
 
 // 获取当前用户的菜单权限
 router.get('/current/menus', controller.userRoleController.getUserMenus);

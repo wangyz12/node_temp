@@ -1,4 +1,3 @@
-// src/services/userRole.service.ts
 import mongoose, { Types } from 'mongoose';
 
 import { MenuModel } from '@/models/system/menu/menu';
@@ -13,25 +12,6 @@ export class UserRoleService {
    * 为用户分配角色
    */
   async assignRolesToUser(userId: string, roleIds: string[]) {
-    // ============================================================
-    // 权限控制点 - 角色分配
-    // ============================================================
-    //
-    // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-    //
-    // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-    //
-    // 生产环境如需数据权限，请按以下步骤实现：
-    //
-    // 1. 在中间件中计算 dataScope
-    // 2. 根据角色获取有权限的部门ID列表
-    // 3. 将 deptIds 传入此处进行过滤
-    //
-    // 示例代码：
-    // if (dataScope?.deptIds?.length) {
-    //   conditions.deptId = { $in: dataScope.deptIds };
-    // }
-    // ============================================================
     // 检查用户是否存在
     const user = await UserModel.findById(userId);
     if (!user) {
@@ -591,9 +571,9 @@ export class UserRoleService {
   }
 
   /**
-   * 获取角色下的用户列表
+   * 获取角色下的用户列表（带数据权限验证）
    */
-  async getRoleUsers(roleId: string, options: { page?: number; limit?: number } = {}) {
+  async getRoleUsers(roleId: string, options: { page?: number; limit?: number } = {}, dataScope?: any) {
     const { page = 1, limit = 10 } = options;
     const skip = (page - 1) * limit;
 
@@ -603,13 +583,21 @@ export class UserRoleService {
       throw new Error('角色不存在或已停用');
     }
 
-    // 获取角色关联的用户总数
-    const total = await UserRoleModel.countDocuments({ roleId: new Types.ObjectId(roleId) });
+    // 构建用户查询条件
+    const userConditions: any = { delFlag: { $ne: '1' } };
 
-    // 获取角色关联的用户列表
+    // 应用数据权限过滤
+    if (dataScope?.filter && Object.keys(dataScope.filter).length > 0) {
+      Object.assign(userConditions, dataScope.filter);
+    } else if (dataScope?.deptIds?.length > 0) {
+      userConditions.deptId = { $in: dataScope.deptIds.map((id: any) => new Types.ObjectId(id)) };
+    }
+
+    // 获取角色关联的用户ID列表（先过滤有权限的用户）
     const userRoles = await UserRoleModel.find({ roleId: new Types.ObjectId(roleId) })
       .populate({
         path: 'userId',
+        match: userConditions,
         select: 'account username phone email deptId status',
         transform: (doc) => {
           if (doc) {
@@ -623,14 +611,17 @@ export class UserRoleService {
               status: doc.status,
             };
           }
-          return doc;
+          return null;
         },
       })
-      .skip(skip)
-      .limit(limit)
       .lean();
 
-    const users = userRoles.map((ur) => ur.userId).filter(Boolean);
+    // 过滤掉没有权限的用户
+    const validUsers = userRoles.map((ur) => ur.userId).filter(Boolean);
+
+    // 分页处理
+    const total = validUsers.length;
+    const users = validUsers.slice(skip, skip + limit);
 
     return {
       users,
@@ -653,6 +644,60 @@ export class UserRoleService {
     });
 
     return !!userRole;
+  }
+
+  /**
+   * 获取用户详情含角色（带数据权限验证）
+   */
+  async getUserDetailWithRoles(userId: string, dataScope?: any) {
+    // 构建用户查询条件
+    const userConditions: any = { _id: userId, delFlag: { $ne: '1' } };
+
+    // 应用数据权限过滤
+    if (dataScope?.filter && Object.keys(dataScope.filter).length > 0) {
+      Object.assign(userConditions, dataScope.filter);
+    } else if (dataScope?.deptIds?.length > 0) {
+      userConditions.deptId = { $in: dataScope.deptIds.map((id: any) => new Types.ObjectId(id)) };
+    }
+
+    // 获取用户信息
+    const user = await UserModel.findOne(userConditions).select('-password');
+    if (!user) {
+      throw new Error('用户不存在或没有访问权限');
+    }
+
+    // 获取用户角色信息
+    const userRoles = await UserRoleModel.find({ userId }).populate<{ roleId: any }>('roleId');
+    const roles = userRoles.map((ur) => {
+      const role = ur.roleId as any;
+      return {
+        id: role._id ? role._id.toString() : role.id,
+        name: role.name,
+        label: role.label,
+        dataScope: role.dataScope,
+      };
+    });
+
+    // 获取用户权限
+    const permissions = await this.getUserPermissions(userId);
+
+    // 获取用户数据权限
+    const userDataScope = await this.getUserDataScope(userId);
+
+    return {
+      user: {
+        id: user._id.toString(),
+        account: user.account,
+        username: user.username,
+        phone: user.phone,
+        email: user.email,
+        deptId: user.deptId,
+        status: user.status,
+      },
+      roles,
+      permissions,
+      dataScope: userDataScope,
+    };
   }
 }
 

@@ -19,9 +19,9 @@ router.post('/loginOut', authenticate, controller.userController.logout);
 // 修改用户信息
 router.post('/upDateUserInfo', authenticate, vaiedation.userViedation.updateUserInfo.updateUserInfo, utils.handleValidationErrors, controller.userController.updateUserInfo);
 // 获取用户详情
-router.get('/detail/:id', authenticate, controller.userController.getUserDetail);
+router.get('/detail/:id', authenticate, dataScope({ deptAlias: 'dept', userAlias: 'user' }), controller.userController.getUserDetail);
 // 获取用户列表
-router.get('/list', authenticate, dataScope({ deptAlias: 'd', userAlias: 'u' }), controller.userController.getUserList);
+router.get('/list', authenticate, dataScope({ deptAlias: 'dept', userAlias: 'user' }), controller.userController.getUserList);
 // 创建用户
 router.post('/create', authenticate, controller.userController.createUser);
 // 更新用户

@@ -1,4 +1,3 @@
-// src/controller/modules/users/userController.ts
 /**
  * 用户控制器
  *
@@ -138,26 +137,6 @@ const updateUserInfo = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 创建的用户信息
  */
 const createUserByAdmin = async (req: ExpressRequest, res: ExpressResponse) => {
-  // ============================================================
-  // 权限控制点 - 管理员创建用户
-  // ============================================================
-  //
-  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-  //
-  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-  //
-  // 生产环境如需数据权限，请按以下步骤实现：
-  //
-  // 1. 在中间件中计算 dataScope
-  // 2. 根据角色获取有权限的部门ID列表
-  // 3. 将 deptIds 传入此处进行过滤
-  //
-  // 示例代码：
-  // if (dataScope?.deptIds?.length) {
-  //   conditions.deptId = { $in: dataScope.deptIds };
-  // }
-  // ============================================================
-
   try {
     const { account, password, username, deptId, phone, email, status, roles } = req.body;
     checkRequiredParams({ account, password, deptId }, ['account', 'password', 'deptId']);
@@ -214,26 +193,6 @@ const getUserDetail = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 更新后的用户信息
  */
 const updateUser = async (req: ExpressRequest, res: ExpressResponse) => {
-  // ============================================================
-  // 权限控制点 - 更新用户
-  // ============================================================
-  //
-  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-  //
-  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-  //
-  // 生产环境如需数据权限，请按以下步骤实现：
-  //
-  // 1. 在中间件中计算 dataScope
-  // 2. 根据角色获取有权限的部门ID列表
-  // 3. 将 deptIds 传入此处进行过滤
-  //
-  // 示例代码：
-  // if (dataScope?.deptIds?.length) {
-  //   conditions.deptId = { $in: dataScope.deptIds };
-  // }
-  // ============================================================
-
   try {
     const id = req.params.id as string;
     const user = await userService.updateUser(id, req.body);
@@ -251,26 +210,6 @@ const updateUser = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 操作结果
  */
 const deleteUser = async (req: ExpressRequest, res: ExpressResponse) => {
-  // ============================================================
-  // 权限控制点 - 删除用户
-  // ============================================================
-  //
-  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-  //
-  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-  //
-  // 生产环境如需数据权限，请按以下步骤实现：
-  //
-  // 1. 在中间件中计算 dataScope
-  // 2. 根据角色获取有权限的部门ID列表
-  // 3. 将 deptIds 传入此处进行过滤
-  //
-  // 示例代码：
-  // if (dataScope?.deptIds?.length) {
-  //   conditions.deptId = { $in: dataScope.deptIds };
-  // }
-  // ============================================================
-
   try {
     const id = req.params.id as string;
     await userService.deleteUser(id);
@@ -289,6 +228,7 @@ const deleteUser = async (req: ExpressRequest, res: ExpressResponse) => {
 const getCurrentUser = async (req: ExpressRequest, res: ExpressResponse) => {
   try {
     const userId = checkAuth(req);
+    // 当前用户总是可以访问自己的信息，不需要数据权限过滤
     const user = await userService.getUserById(userId);
     successResponse(res, user, '获取成功');
   } catch (error: any) {
@@ -311,31 +251,11 @@ const createUser = createUserByAdmin;
  * @returns {object} 操作结果
  */
 const batchDeleteUsers = async (req: ExpressRequest, res: ExpressResponse) => {
-  // ============================================================
-  // 权限控制点 - 批量删除用户
-  // ============================================================
-  //
-  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-  //
-  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-  //
-  // 生产环境如需数据权限，请按以下步骤实现：
-  //
-  // 1. 在中间件中计算 dataScope
-  // 2. 根据角色获取有权限的部门ID列表
-  // 3. 将 deptIds 传入此处进行过滤
-  //
-  // 示例代码：
-  // if (dataScope?.deptIds?.length) {
-  //   conditions.deptId = { $in: dataScope.deptIds };
-  // }
-  // ============================================================
-
   try {
     const { ids } = req.body;
     checkArrayParam(ids, 'ids');
 
-    // 逐个删除用户
+    // 逐个删除用户（应用数据权限）
     for (const id of ids) {
       await userService.deleteUser(id as string);
     }

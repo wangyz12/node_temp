@@ -1,4 +1,3 @@
-// src/services/role.service.ts
 import { Types } from 'mongoose';
 
 import { DeptModel } from '@/models/system/dept/dept';
@@ -64,12 +63,23 @@ export class RoleService {
   }
 
   /**
-   * 获取角色详情
+   * 获取角色详情（带数据权限验证）
    */
-  async getRoleDetail(id: string) {
-    const role = await RoleModel.findOne({ _id: id, delFlag: { $ne: '1' } });
+  async getRoleDetail(id: string, dataScope?: any) {
+    // 构建查询条件
+    const conditions: any = { _id: id, delFlag: { $ne: '1' } };
+
+    // 应用数据权限过滤
+    if (dataScope?.filter && Object.keys(dataScope.filter).length > 0) {
+      // 角色详情通常不需要部门ID过滤，但可以添加创建人权限控制
+      if (dataScope.filter.createdBy) {
+        conditions.createdBy = dataScope.filter.createdBy;
+      }
+    }
+
+    const role = await RoleModel.findOne(conditions);
     if (!role) {
-      throw createAppError('角色不存在', { statusCode: 404 });
+      throw createAppError('角色不存在或没有访问权限', { statusCode: 404 });
     }
 
     return {
@@ -186,12 +196,21 @@ export class RoleService {
   }
 
   /**
-   * 获取所有角色（用于下拉选择）
+   * 获取所有角色（用于下拉选择，带数据权限过滤）
    */
-  async getAllRoles() {
-    const roles = await RoleModel.find({ delFlag: { $ne: '1' }, status: '0' })
-      .sort({ createdAt: -1 })
-      .select('name label');
+  async getAllRoles(dataScope?: any) {
+    // 构建查询条件
+    const conditions: any = { delFlag: { $ne: '1' }, status: '0' };
+
+    // 应用数据权限过滤
+    if (dataScope?.filter && Object.keys(dataScope.filter).length > 0) {
+      // 角色列表可以基于创建人过滤
+      if (dataScope.filter.createdBy) {
+        conditions.createdBy = dataScope.filter.createdBy;
+      }
+    }
+
+    const roles = await RoleModel.find(conditions).sort({ createdAt: -1 }).select('name label');
 
     return roles.map((role) => ({
       id: role._id.toString(),

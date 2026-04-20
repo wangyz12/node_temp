@@ -1,10 +1,10 @@
-// src/routes/modules/dept/dept.ts
 import express from 'express';
 
 import controller from '@/controller/index.ts';
 import { authenticate } from '@/middlewares/auth.ts';
 import { checkPermission } from '@/middlewares/permission.ts';
 import { systemPermissions } from '@/constants/permissions';
+import { dataScope } from '@/middlewares/dataScope';
 
 const router = express.Router();
 
@@ -12,13 +12,13 @@ const router = express.Router();
 router.use(authenticate);
 
 // 获取部门树
-router.get('/tree', checkPermission(systemPermissions.dept.list), controller.deptController.getDeptTree);
+router.get('/tree', dataScope({ deptAlias: 'dept' }), checkPermission(systemPermissions.dept.list), controller.deptController.getDeptTree);
 
 // 获取所有部门（下拉选择）
-router.get('/all', controller.deptController.getAllDepts);
+router.get('/all', dataScope({ deptAlias: 'dept' }), controller.deptController.getAllDepts);
 
 // 获取部门详情
-router.get('/detail/:id', checkPermission(systemPermissions.dept.query), controller.deptController.getDeptDetail);
+router.get('/detail/:id', dataScope({ deptAlias: 'dept' }), checkPermission(systemPermissions.dept.query), controller.deptController.getDeptDetail);
 
 // 创建部门
 router.post('/create', checkPermission(systemPermissions.dept.add), controller.deptController.createDept);

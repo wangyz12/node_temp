@@ -1,4 +1,3 @@
-// src/middlewares/dataScope.middleware.ts
 import { UserRoleService } from '@/services/system/userRole.service.ts';
 
 /**
@@ -20,8 +19,8 @@ export const dataScope = (options: {
           deptIds: [],
           dataScope: '5',
           filter: {},
-          deptAlias: options.deptAlias || 'd',
-          userAlias: options.userAlias || 'u',
+          deptAlias: options.deptAlias || 'dept',
+          userAlias: options.userAlias || 'user',
         };
         return next();
       }
@@ -37,8 +36,8 @@ export const dataScope = (options: {
         // 保持原有字段（兼容现有代码）
         deptIds: dataScopeInfo.deptIds || [],
         dataScope: dataScopeInfo.dataScope || '5',
-        deptAlias: options.deptAlias || 'd',
-        userAlias: options.userAlias || 'u',
+        deptAlias: options.deptAlias || 'dept',
+        userAlias: options.userAlias || 'user',
 
         // 新增字段
         filter: dataScopeInfo.filter || {},
@@ -114,8 +113,8 @@ export const dataScope = (options: {
         deptIds: [],
         dataScope: '5',
         filter: { createdBy: req.user?.userId },
-        deptAlias: options.deptAlias || 'd',
-        userAlias: options.userAlias || 'u',
+        deptAlias: options.deptAlias || 'dept',
+        userAlias: options.userAlias || 'user',
         createdByField: options.createdByField || 'createdBy',
         deptIdField: options.deptIdField || 'deptId',
         userId: req.user?.userId,

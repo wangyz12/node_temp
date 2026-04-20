@@ -1,10 +1,10 @@
-// src/routes/modules/role/role.ts
 import express from 'express';
 
 import controller from '@/controller/index.ts';
 import { authenticate } from '@/middlewares/auth.ts';
 import { checkPermission } from '@/middlewares/permission.ts';
 import { systemPermissions } from '@/constants/permissions';
+import { dataScope } from '@/middlewares/dataScope';
 
 const router = express.Router();
 
@@ -12,13 +12,13 @@ const router = express.Router();
 router.use(authenticate);
 
 // 获取角色列表
-router.get('/list', checkPermission(systemPermissions.role.list), controller.roleController.getRoleList);
+router.get('/list', dataScope({ deptAlias: 'dept' }), checkPermission(systemPermissions.role.list), controller.roleController.getRoleList);
 
 // 获取所有角色（下拉选择）
-router.get('/all', controller.roleController.getAllRoles);
+router.get('/all', dataScope({ deptAlias: 'dept' }), controller.roleController.getAllRoles);
 
 // 获取角色详情
-router.get('/detail/:id', checkPermission(systemPermissions.role.query), controller.roleController.getRoleDetail);
+router.get('/detail/:id', dataScope({ deptAlias: 'dept' }), checkPermission(systemPermissions.role.query), controller.roleController.getRoleDetail);
 
 // 创建角色
 router.post('/create', checkPermission(systemPermissions.role.add), controller.roleController.createRole);

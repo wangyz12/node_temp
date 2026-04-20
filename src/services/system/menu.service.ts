@@ -1,4 +1,3 @@
-// src/services/menu.service.ts
 import { MenuModel } from '@/models/system/menu/menu';
 
 export class MenuService {

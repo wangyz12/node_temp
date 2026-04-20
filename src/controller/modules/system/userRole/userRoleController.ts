@@ -1,4 +1,3 @@
-// src/controller/modules/userRole/userRoleController.ts
 /**
  * 用户角色控制器
  *
@@ -30,25 +29,6 @@ const userRoleService = new UserRoleService();
  * @returns {object} 操作结果
  */
 const assignUserRoles = async (req: ExpressRequest, res: ExpressResponse) => {
-  // ============================================================
-  // 权限控制点 - 分配用户角色
-  // ============================================================
-  //
-  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-  //
-  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-  //
-  // 生产环境如需数据权限，请按以下步骤实现：
-  //
-  // 1. 在中间件中计算 dataScope
-  // 2. 根据角色获取有权限的部门ID列表
-  // 3. 将 deptIds 传入此处进行过滤
-  //
-  // 示例代码：
-  // if (dataScope?.deptIds?.length) {
-  //   conditions.deptId = { $in: dataScope.deptIds };
-  // }
-  // ============================================================
   try {
     const { userId, roleIds } = req.body;
     checkRequiredParams({ userId, roleIds }, ['userId', 'roleIds']);
@@ -89,25 +69,6 @@ const getUserRoles = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 操作结果
  */
 const removeUserRole = async (req: ExpressRequest, res: ExpressResponse) => {
-  // ============================================================
-  // 权限控制点 - 移除用户角色
-  // ============================================================
-  //
-  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-  //
-  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-  //
-  // 生产环境如需数据权限，请按以下步骤实现：
-  //
-  // 1. 在中间件中计算 dataScope
-  // 2. 根据角色获取有权限的部门ID列表
-  // 3. 将 deptIds 传入此处进行过滤
-  //
-  // 示例代码：
-  // if (dataScope?.deptIds?.length) {
-  //   conditions.deptId = { $in: dataScope.deptIds };
-  // }
-  // ============================================================
   try {
     const { userId, roleId } = req.body;
     checkRequiredParams({ userId, roleId }, ['userId', 'roleId']);
@@ -129,25 +90,6 @@ const removeUserRole = async (req: ExpressRequest, res: ExpressResponse) => {
  * @returns {object} 操作结果
  */
 const batchUserRoleOperation = async (req: ExpressRequest, res: ExpressResponse) => {
-  // ============================================================
-  // 权限控制点 - 批量操作用户角色
-  // ============================================================
-  //
-  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-  //
-  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-  //
-  // 生产环境如需数据权限，请按以下步骤实现：
-  //
-  // 1. 在中间件中计算 dataScope
-  // 2. 根据角色获取有权限的部门ID列表
-  // 3. 将 deptIds 传入此处进行过滤
-  //
-  // 示例代码：
-  // if (dataScope?.deptIds?.length) {
-  //   conditions.deptId = { $in: dataScope.deptIds };
-  // }
-  // ============================================================
   try {
     const { userId, addRoleIds = [], removeRoleIds = [] } = req.body;
     checkRequiredParams({ userId }, ['userId']);
@@ -181,7 +123,7 @@ const getRoleUsers = async (req: ExpressRequest, res: ExpressResponse) => {
     const roleId = req.params.roleId;
     const { page = 1, limit = 10 } = req.query;
     checkRequiredParams({ roleId }, ['roleId']);
-    const result = await userRoleService.getRoleUsers(roleId as string, { page, limit } as any);
+    const result = await userRoleService.getRoleUsers(roleId as string, { page, limit } as any, req.dataScope);
     successResponse(res, result, '获取成功');
   } catch (error: any) {
     handleError(error, res, '获取角色用户列表失败');
@@ -213,25 +155,6 @@ const checkUserRole = async (req: ExpressRequest, res: ExpressResponse) => {
  * @route POST /api/user-role/batch-assign
  */
 const batchAssignRoles = async (req: ExpressRequest, res: ExpressResponse) => {
-  // ============================================================
-  // 权限控制点 - 批量分配角色
-  // ============================================================
-  //
-  // 当前版本：仅预留数据权限接口，未实现具体过滤逻辑。
-  //
-  // 原因：作为模板项目，保持简洁，让使用者自行扩展。
-  //
-  // 生产环境如需数据权限，请按以下步骤实现：
-  //
-  // 1. 在中间件中计算 dataScope
-  // 2. 根据角色获取有权限的部门ID列表
-  // 3. 将 deptIds 传入此处进行过滤
-  //
-  // 示例代码：
-  // if (dataScope?.deptIds?.length) {
-  //   conditions.deptId = { $in: dataScope.deptIds };
-  // }
-  // ============================================================
   try {
     const { userIds, roleIds } = req.body;
     checkRequiredParams({ userIds, roleIds }, ['userIds', 'roleIds']);
@@ -253,7 +176,7 @@ const getUserWithRoles = async (req: ExpressRequest, res: ExpressResponse) => {
   try {
     const { userId } = req.params;
     checkRequiredParams({ userId }, ['userId']);
-    const userWithRoles = await userRoleService.getUserWithRoles(userId as string);
+    const userWithRoles = await userRoleService.getUserDetailWithRoles(userId as string, req.dataScope);
     successResponse(res, userWithRoles, '获取成功');
   } catch (error: any) {
     handleError(error, res, '获取用户详情失败');

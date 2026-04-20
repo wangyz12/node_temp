@@ -1,4 +1,3 @@
-// src/services/dept.service.ts
 import { Types } from 'mongoose';
 
 import { DeptModel } from '@/models/system/dept/dept';
@@ -7,9 +6,9 @@ import { createAppError } from '@/utils/errorHandler.ts';
 
 export class DeptService {
   /**
-   * 获取部门树形结构
+   * 获取部门树形结构（带数据权限过滤）
    */
-  async getDeptTree(query: any) {
+  async getDeptTree(query: any, dataScope?: any) {
     const { status, keyword } = query;
 
     // 构建查询条件
@@ -23,6 +22,23 @@ export class DeptService {
       conditions.name = new RegExp(keyword as string, 'i');
     }
 
+    // 应用数据权限过滤
+    if (dataScope?.filter && Object.keys(dataScope.filter).length > 0) {
+      // 部门树查询需要特殊处理部门ID过滤
+      if (dataScope.filter.deptId) {
+        if (dataScope.filter.deptId.$in && Array.isArray(dataScope.filter.deptId.$in)) {
+          // 用户只能访问特定部门列表，需要构建完整的部门树但只显示有权限的部门
+          conditions._id = { $in: dataScope.filter.deptId.$in };
+        } else if (dataScope.filter.deptId) {
+          // 用户只能访问单个部门
+          conditions._id = dataScope.filter.deptId;
+        }
+      }
+    } else if (dataScope?.deptIds?.length > 0) {
+      // 用户只能访问特定部门列表
+      conditions._id = { $in: dataScope.deptIds.map((id: any) => new Types.ObjectId(id)) };
+    }
+
     // 获取所有符合条件的部门
     const allDepts = await DeptModel.find(conditions).sort({ orderNum: 1 });
 
@@ -32,7 +48,7 @@ export class DeptService {
         if (parentId === null) return !dept.parentId;
         return dept.parentId?.toString() === parentId;
       });
-      console.log(filtered);
+
       return filtered.map((dept: any) => {
         const children = buildDeptTree(dept._id.toString());
         return {
@@ -58,12 +74,34 @@ export class DeptService {
   }
 
   /**
-   * 获取部门详情
+   * 获取部门详情（带数据权限验证）
    */
-  async getDeptDetail(id: string) {
-    const dept: any = await DeptModel.findOne({ _id: id, delFlag: '0' });
+  async getDeptDetail(id: string, dataScope?: any) {
+    // 构建查询条件
+    const conditions: any = { _id: id, delFlag: '0' };
+
+    // 应用数据权限过滤
+    if (dataScope?.filter && Object.keys(dataScope.filter).length > 0) {
+      // 部门详情通常不需要部门ID过滤，但可以添加其他权限控制
+      // 例如：检查用户是否有权限访问该部门
+      if (dataScope.filter.deptId) {
+        // 如果用户只能访问特定部门，检查请求的部门是否在权限范围内
+        const deptIds = Array.isArray(dataScope.filter.deptId.$in) ? dataScope.filter.deptId.$in.map((id: any) => id.toString()) : [dataScope.filter.deptId.toString()];
+
+        if (!deptIds.includes(id)) {
+          throw createAppError('没有访问该部门的权限', { statusCode: 403 });
+        }
+      }
+    } else if (dataScope?.deptIds?.length > 0) {
+      // 检查请求的部门ID是否在用户权限范围内
+      if (!dataScope.deptIds.includes(id)) {
+        throw createAppError('没有访问该部门的权限', { statusCode: 403 });
+      }
+    }
+
+    const dept: any = await DeptModel.findOne(conditions);
     if (!dept) {
-      throw createAppError('部门不存在', { statusCode: 404 });
+      throw createAppError('部门不存在或没有访问权限', { statusCode: 404 });
     }
 
     return {
@@ -245,10 +283,26 @@ export class DeptService {
   }
 
   /**
-   * 获取所有部门（扁平列表）
+   * 获取所有部门（扁平列表，带数据权限过滤）
    */
-  async getAllDepts() {
-    const depts = await DeptModel.find({ delFlag: '0', status: '0' }).sort({ orderNum: 1 }).select('name parentId');
+  async getAllDepts(dataScope?: any) {
+    // 构建查询条件
+    const conditions: any = { delFlag: '0', status: '0' };
+
+    // 应用数据权限过滤
+    if (dataScope?.filter && Object.keys(dataScope.filter).length > 0) {
+      if (dataScope.filter.deptId) {
+        if (dataScope.filter.deptId.$in && Array.isArray(dataScope.filter.deptId.$in)) {
+          conditions._id = { $in: dataScope.filter.deptId.$in };
+        } else if (dataScope.filter.deptId) {
+          conditions._id = dataScope.filter.deptId;
+        }
+      }
+    } else if (dataScope?.deptIds?.length > 0) {
+      conditions._id = { $in: dataScope.deptIds.map((id: any) => new Types.ObjectId(id)) };
+    }
+
+    const depts = await DeptModel.find(conditions).sort({ orderNum: 1 }).select('name parentId');
 
     return depts.map((dept) => ({
       id: dept._id.toString(),
