@@ -5,7 +5,13 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-    env_file:
-      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - MONGODB_URI=mongodb://host.docker.internal:27017/my_admin
+      - JWT_SECRET=615b2c65-1564-495b-9387-72fb0bacf832
+      - JWT_EXPIRES_IN=24h
+      - PORT=3000
+      - NODE_ENV=production
     volumes:
       - ./logs:/app/logs
