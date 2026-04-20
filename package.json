@@ -7,7 +7,7 @@
     "dev": "node --env-file=.env --import tsx --watch src/server.ts",
     "build": "tsup",
     "build:dev": "tsup --config tsup.dev.config.ts",
-    "start": "node dist/server.js",
+    "start": "node --env-file=.env dist/server.js",
     "lint": "eslint src",
     "type-check": "tsc --noEmit --skipLibCheck",
     "init-db": "node --env-file=.env --import tsx src/scripts/initDatabase.ts",
