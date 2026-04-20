@@ -2,9 +2,9 @@
 
 一个基于 Express + TypeScript + MongoDB 构建的企业级后台管理系统后端，提供完整的用户认证、RBAC权限控制、数据权限管理、日志监控等功能。
 
-**后端仓库地址：** https://gitee.com/W_admin_code/node_temp
-**前端仓库地址：** https://gitee.com/W_admin_code/my_admin
-**演示地址：** https://temp-code.top/
+**前端仓库地址：** [https://gitee.com/W_admin_code/my_admin](https://gitee.com/W_admin_code/my_admin)
+**演示地址：** [https://temp-code.top/](https://temp-code.top/)
+
 # 项目分支说明
 
 本项目采用多分支策略，根据不同场景提供不同功能版本。
