@@ -5,6 +5,7 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 .meteor/
+
 # 环境变量文件 - 包含敏感信息，绝对不能上传
 .env.*
 !.env.example
@@ -63,6 +64,4 @@ desktop.ini
 *.sqlite3
 
 # 运行时文件
-.pid
-.pid
-*.pid
+*.piddist/

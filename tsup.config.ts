@@ -1,4 +1,4 @@
-import { defineConfig } from 'tsup'
+import { defineConfig } from 'tsup';
 
 export default defineConfig({
   entry: ['src/server.ts'],
@@ -27,14 +27,14 @@ export default defineConfig({
     'svg-captcha',
     'uuid',
     'xss',
-    'chalk'
+    'chalk',
   ],
   loader: {
-    '.ts': 'ts'
+    '.ts': 'ts',
   },
   tsconfig: 'tsconfig.json',
   onSuccess: 'echo "Build completed successfully"',
   // 禁用类型检查
   dts: false,
-  skipNodeModulesBundle: true
-})
+  skipNodeModulesBundle: true,
+});

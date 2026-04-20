@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "node --env-file=.env --import tsx --watch src/server.ts",
-    "build": "echo '✅ Build completed' && exit 0",
+    "build": "tsup",
+    "build:dev": "tsup --config tsup.dev.config.ts",
     "start": "node dist/server.js",
     "lint": "eslint src",
     "type-check": "tsc --noEmit --skipLibCheck",
