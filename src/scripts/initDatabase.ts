@@ -122,7 +122,19 @@ async function initEnhancedDatabase() {
     const topLevelMenus = [
       { name: 'home', path: '/home', component: 'home/index', title: '首页', icon: 'home', sort: 0, type: 'menu', hidden: false, cache: true, permission: commonPermissions.home.view, status: '0' },
       { name: 'system', path: '/system', component: 'Layout', title: '系统管理', icon: 'system', sort: 1, type: 'menu', hidden: false, cache: true, permission: systemPermissions.manage, status: '0' },
-      { name: 'business', path: '/business', component: 'Layout', title: '业务管理', icon: 'business', sort: 2, type: 'menu', hidden: false, cache: true, permission: businessPermissions.manage, status: '0' },
+      {
+        name: 'business',
+        path: '/business',
+        component: 'Layout',
+        title: '表格示例',
+        icon: 'business',
+        sort: 2,
+        type: 'menu',
+        hidden: false,
+        cache: true,
+        permission: businessPermissions.manage,
+        status: '0',
+      },
     ];
 
     for (const menu of topLevelMenus) {
@@ -214,7 +226,7 @@ async function initEnhancedDatabase() {
         name: 'project',
         path: '/business/project',
         component: 'business/project/index',
-        title: '项目管理',
+        title: '普通表格',
         icon: 'project',
         sort: 10,
         type: 'menu',
@@ -227,7 +239,7 @@ async function initEnhancedDatabase() {
         name: 'task',
         path: '/business/task',
         component: 'business/task/index',
-        title: '任务管理',
+        title: '多级表头',
         icon: 'task',
         sort: 20,
         type: 'menu',
